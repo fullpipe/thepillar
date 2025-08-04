@@ -1,0 +1,43 @@
+<video
+  autoplay
+  loop
+  #pillar
+  poster="videos/polefull-001red-long_1-1080p-poster-00001.jpg"
+>
+  <source src="videos/thepillartest.mp4" type="video/mp4" />
+  <source
+    src="videos/polefull-001red-long_1-1080p-transcode.webm"
+    type="video/webm"
+  />
+</video>
+
+<audio src="https://stream.zeno.fm/u49yw4kjumhtv" preload="none" #radio></audio>
+
+<div class="control">
+  @if(playing()) {
+  <button class="play-radio" (click)="pause()">
+    <span>&#10074;&#10074;</span>
+  </button>
+  } @else if(waiting()) {
+  <button class="play-radio" (click)="play()">
+    <span>•••</span>
+  </button>
+  } @else {
+  <button class="play-radio" (click)="play()">
+    <span>▶</span>
+  </button>
+  }
+</div>
+
+<div class="info">
+  <a
+    href="#"
+    data-tippy-content="Most of the audio is recorded from &lt;a href=http://websdr.ewi.utwente.nl:8901 target=_blank&gt;http://websdr.ewi.utwente.nl:8901&lt;/a&gt; over the span of several years. &lt;br&gt; ---&lt;br&gt; I hope to have my own antenna one day.&lt;br&gt; ---&lt;br&gt; You might occasionally hear some other things.&lt;br&gt; ---&lt;br&gt; If you&#x27;re not alone on this page you will be hearing the sound in sync with others.&lt;br&gt;---&lt;br&gt; This is the part of endless &lt;a href=https://thepillar.method.education/ target=_blank&gt;The Pillar&lt;/a&gt;"
+    class="whitelink-copy tooltip"
+    ><span class="text-span-7">?</span></a
+  >&nbsp;
+  <a href="https://publish.obsidian.md/thepillar/thepillardiary" target="_blank"
+    >The Pillar Project</a
+  ><br />
+  <a routerLink="/" class="link-23">Alexandra Fiodorova</a><br />
+</div>

@@ -1,0 +1,88 @@
+.text {
+  font-family: sans-serif;
+  font-size: 5.25vw;
+  line-height: 5.25vw;
+  font-variant-ligatures: normal;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+}
+
+.text p,
+h1 {
+  margin: 0;
+
+  opacity: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  font-family: inherit;
+  font-weight: normal;
+
+  display: block;
+  position: relative;
+  transform: translate(0, 1.5vw);
+  animation: fadein 0.2s forwards ease-out;
+  padding: 2.1vw 10vw 3.15vw 3vw;
+}
+
+.text a {
+  text-decoration: underline;
+  text-decoration-skip: ink;
+  color: inherit;
+  padding-left: 0.5vw;
+  padding-right: 0.5vw;
+  margin-left: -0.5vw;
+  margin-right: -0.5vw;
+  cursor: pointer;
+}
+
+.text a:hover {
+  text-decoration: none;
+}
+
+.text a:focus {
+  text-decoration: none;
+  outline: solid 4px rgba(0, 0, 0, 0.4);
+}
+
+::selection {
+  background: #000;
+  background: rgba(0, 0, 0, 0.99);
+  color: #fff;
+}
+
+@keyframes fadein {
+  0% {
+    opacity: 0;
+    transform: translate(0, 1.5vw);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* Mobile (under 768px) */
+@media screen and (max-width: 767px) {
+  .text {
+    font-size: 6.5vw;
+    line-height: 6.5vw;
+  }
+
+  .text p,
+  h1 {
+    padding: 3vw 5vw;
+  }
+}
+
+/* Very small phones (under 480px) */
+@media screen and (max-width: 480px) {
+  .text {
+    font-size: 6vw;
+    line-height: 6vw;
+  }
+}
