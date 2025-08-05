@@ -20,6 +20,12 @@ import {
   SRGBColorSpace,
   Color,
   EquirectangularReflectionMapping,
+  Sphere,
+  Vector3,
+  BackSide,
+  SphereGeometry,
+  MeshBasicMaterial,
+  ShaderMaterial,
 } from 'three';
 
 import GUI from 'lil-gui';
@@ -168,12 +174,62 @@ export class Pillar {
   }
 
   async buildBG() {
-    const loader = new TextureLoader(this.loadingManager);
-    const texture = loader.load('textures/mud_road_puresky.jpg');
-    texture.colorSpace = SRGBColorSpace;
-    texture.mapping = EquirectangularReflectionMapping;
+    const geometry = new SphereGeometry(20, 32, 32);
+    geometry.computeBoundingBox();
 
-    // this.scene.background = new Color('#ff0033');
+    var material = new ShaderMaterial({
+      uniforms: {
+        color1: {
+          value: new Color('#a1b5b9'),
+        },
+        color2: {
+          value: new Color('#809da2'),
+        },
+        bboxMin: {
+          value: geometry.boundingBox!.min,
+        },
+        bboxMax: {
+          value: geometry.boundingBox!.max,
+        },
+      },
+      vertexShader: `
+        uniform vec3 bboxMin;
+        uniform vec3 bboxMax;
+
+        varying vec2 vUv;
+
+        void main() {
+          vUv.y = (position.y - bboxMin.y) / (bboxMax.y - bboxMin.y);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 color1;
+        uniform vec3 color2;
+
+        varying vec2 vUv;
+
+        void main() {
+          gl_FragColor = vec4(mix(color1, color2, vUv.y), 1.0);
+        }
+      `,
+      // wireframe: true,
+    });
+
+    // Вариант фона с текстурой
+    // const loader = new TextureLoader(this.loadingManager);
+    // const texture = loader.load('textures/bambanani_sunset.jpg');
+    // texture.colorSpace = SRGBColorSpace;
+    // texture.mapping = EquirectangularReflectionMapping;
+    // const material = new MeshBasicMaterial({ map: texture });
+
+    material.side = BackSide;
+    const sphere = new Mesh(geometry, material);
+
+    console.log(sphere);
+    this.scene.add(sphere);
+
+    // this.scene.background = texture;
   }
 
   async mouseTracking() {
@@ -671,7 +727,7 @@ export class Pillar {
     cameraControls.minZoom = 1.2;
     cameraControls.maxZoom = 5;
     cameraControls.enablePan = false;
-    cameraControls.autoRotateSpeed = 1;
+    cameraControls.autoRotateSpeed = 0.4;
 
     if (this.canvas.clientWidth < this.canvas.clientHeight) {
       cameraControls.maxDistance = 3.5;
@@ -682,7 +738,6 @@ export class Pillar {
     cameraControls.update();
 
     document.addEventListener('mousemove', (e) => {
-      cameraControls.getPolarAngle();
       this.camera.rotateY((e.clientY / window.innerHeight) * Math.PI);
     });
 
@@ -742,10 +797,10 @@ export class Pillar {
       loader.load(
         path,
         (gltf) => {
-          console.log(path, gltf);
-          gltf.scene.traverse((child) => {
-            console.log(path, child);
-          });
+          // console.log(path, gltf);
+          // gltf.scene.traverse((child) => {
+          //   console.log(path, child);
+          // });
           gltf.scene.traverse((child) => {
             if (child instanceof Mesh) {
               resolve(child);
