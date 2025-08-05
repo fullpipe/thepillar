@@ -1,0 +1,8 @@
+version: "3"
+
+env:
+  IMAGE_PATH: registry.gitlab.com/fullpipe/registry/pterodactylsupplies/thepillar
+
+tasks:
+  build: docker build --platform=linux/amd64 --target release -t $IMAGE_PATH .
+  push: docker push $IMAGE_PATH:latest

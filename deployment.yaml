@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pterodactylsupplies-thepillar
+  labels:
+    app: pterodactylsupplies-thepillar
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pterodactylsupplies-thepillar
+  template:
+    metadata:
+      labels:
+        app: pterodactylsupplies-thepillar
+    spec:
+      containers:
+        - name: pterodactylsupplies-thepillar
+          image: registry.gitlab.com/fullpipe/registry/pterodactylsupplies/thepillar:latest
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pterodactylsupplies-thepillar-service
+spec:
+  ports:
+    - name: http
+      targetPort: 8080
+      port: 8080
+  selector:
+    app: pterodactylsupplies-thepillar
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pterodactylsupplies-thepillar
+spec:
+  ingressClassName: "traefik"
+  tls:
+    - hosts:
+        - "thepillar.fullpipe.dev"
+      secretName: thepillar.fullpipe.dev-tls
+  rules:
+    - host: thepillar.fullpipe.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pterodactylsupplies-thepillar-service
+                port:
+                  name: http
