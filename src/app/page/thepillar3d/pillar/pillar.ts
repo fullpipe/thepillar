@@ -67,6 +67,8 @@ export class Pillar {
   animations: ((clock: Clock) => void)[] = [];
 
   mouseProgress = 0.5;
+  mouseProgressX = 0.5;
+  mouseProgressY = 0.5;
   soundProgress = 0.5;
 
   radio!: HTMLMediaElement;
@@ -74,6 +76,8 @@ export class Pillar {
 
   mic!: MediaStream;
   micSource!: MediaStreamAudioSourceNode;
+
+  reactOnSound = false;
 
   config = {
     radio: {
@@ -152,12 +156,14 @@ export class Pillar {
     return Promise.all([
       this.buildBG(),
       this.buildLight(),
-      this.buildCoreWire(),
+      this.buildCoreWireSeparate(),
+      // this.buildCoreWire(),
       this.buildMainWire(),
       this.buildPole(),
       // this.buildPole2(),
       this.buildGrid(),
       this.buildStatsAndClock(),
+      this.mouseTracking(),
     ]).then(() => this.restoreGUI());
   }
 
@@ -168,6 +174,17 @@ export class Pillar {
     texture.mapping = EquirectangularReflectionMapping;
 
     // this.scene.background = new Color('#ff0033');
+  }
+
+  async mouseTracking() {
+    document.addEventListener('mousemove', (e) => {
+      this.mouseProgress = e.clientX / window.innerWidth;
+
+      // this.mouseProgressX = e.clientX / window.innerWidth;
+      // this.mouseProgressY = e.clientY / window.innerHeight;
+      this.mouseProgressX = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
+      this.mouseProgressY = Math.abs(e.clientY / window.innerHeight - 0.5) * 2;
+    });
   }
 
   async run() {
@@ -254,10 +271,6 @@ export class Pillar {
       maxLoudness = Math.max(maxLoudness, loudness);
 
       this.soundProgress = loudness;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      this.mouseProgress = e.clientX / window.innerWidth;
     });
 
     this.draw(0);
@@ -447,9 +460,13 @@ export class Pillar {
     this.mainWire.geometry.setDrawRange(0, 0);
 
     this.animations.push(() => {
+      const progress = this.reactOnSound
+        ? this.soundProgress
+        : this.mouseProgressY;
+
       this.mainWire.geometry.setDrawRange(
         0,
-        Math.floor(this.mainWire.geometry.index?.count! * this.soundProgress)
+        Math.floor(this.mainWire.geometry.index?.count! * progress)
       );
     });
 
@@ -471,6 +488,34 @@ export class Pillar {
     );
   }
 
+  async buildCoreWireSeparate() {
+    return Promise.all(
+      [...Array(48).keys()].map(async (idx) => {
+        const wire = await this.loadGtlfMesh(
+          `models/core-separate-001/ore-008-med-${String(idx + 1).padStart(
+            3,
+            '0'
+          )}.glb`
+        );
+
+        const material = new MeshStandardMaterial({
+          roughness: this.config.wire.core.roughness,
+          metalness: this.config.wire.core.metalness,
+          color: this.config.wire.core.color,
+        });
+        wire.material = material;
+
+        this.scene.add(wire);
+        wire.geometry.setDrawRange(0, 0);
+        this.animations.push(() => {
+          wire.geometry.setDrawRange(
+            0,
+            Math.floor(wire.geometry.index?.count! * this.mouseProgressX)
+          );
+        });
+      })
+    );
+  }
   async buildCoreWire() {
     // this.coreWire = await this.loadGtlfMesh('models/corealot-smooth.gtlf');
     // this.coreWire = await this.loadGtlfMesh('models/core-004-med-smooth-classname.gtlf');
@@ -492,7 +537,7 @@ export class Pillar {
     this.animations.push(() => {
       this.coreWire.geometry.setDrawRange(
         0,
-        Math.floor(this.coreWire.geometry.index?.count! * this.mouseProgress)
+        Math.floor(this.coreWire.geometry.index?.count! * this.mouseProgressX)
       );
     });
 
