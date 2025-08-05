@@ -1,0 +1,736 @@
+import {
+  WebGLRenderer,
+  PCFSoftShadowMap,
+  Scene,
+  LoadingManager,
+  AmbientLight,
+  DirectionalLight,
+  Mesh,
+  MeshStandardMaterial,
+  OrthographicCamera,
+  PerspectiveCamera,
+  GridHelper,
+  Clock,
+  Camera,
+  MeshPhysicalMaterial,
+  Vector2,
+  TextureLoader,
+  RepeatWrapping,
+  ColorManagement,
+  SRGBColorSpace,
+  Color,
+  EquirectangularReflectionMapping,
+} from 'three';
+
+import GUI from 'lil-gui';
+import {
+  DragControls,
+  GLTFLoader,
+  OrbitControls,
+} from 'three/examples/jsm/Addons.js';
+
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
+import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
+import { LUTCubeLoader } from 'three/addons/loaders/LUTCubeLoader.js';
+
+import { toggleFullScreen } from './helpers/fullscreen';
+import Stats from 'stats.js';
+import { resizeRendererToDisplaySize } from './helpers/responsiveness';
+
+export class Pillar {
+  canvas: HTMLElement;
+  renderer!: WebGLRenderer;
+  composer!: EffectComposer;
+
+  scene!: Scene;
+  loadingManager!: LoadingManager;
+  ambientLight!: AmbientLight;
+  directLight!: DirectionalLight;
+
+  mainWire!: Mesh;
+  coreWire!: Mesh;
+  pole!: Mesh;
+
+  camera!: Camera;
+  cameraControls!: OrbitControls;
+  dragControls!: DragControls;
+
+  clock!: Clock;
+  stats!: Stats;
+  gui!: GUI;
+
+  animations: ((clock: Clock) => void)[] = [];
+
+  mouseProgress = 0.5;
+  soundProgress = 0.5;
+
+  radio!: HTMLMediaElement;
+  radioSource!: MediaElementAudioSourceNode;
+
+  mic!: MediaStream;
+  micSource!: MediaStreamAudioSourceNode;
+
+  config = {
+    radio: {
+      play: true,
+      stream: 'https://stream.zeno.fm/u49yw4kjumhtv',
+    },
+    light: {
+      direct: {
+        color: 0xffffff,
+        intensity: 0.3,
+      },
+      ambient: {
+        color: 0xffffff,
+        intensity: 0.1,
+      },
+    },
+    wire: {
+      main: {
+        roughness: 0.3,
+        metalness: 1.0,
+        color: 0xffffff,
+      },
+      core: {
+        roughness: 0.3,
+        metalness: 1.0,
+        color: 0xffffff,
+      },
+      pole: {
+        roughness: 0.0,
+        metalness: 0.0,
+        color: 0x898989,
+      },
+    },
+    animation: {
+      play: true,
+    },
+  };
+
+  constructor(canvas: HTMLElement) {
+    this.canvas = canvas;
+  }
+
+  async init(progress?: (progress: number) => void) {
+    ColorManagement.enabled = false;
+
+    const renderer = new WebGLRenderer({
+      canvas: this.canvas,
+      antialias: true,
+      alpha: true,
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.outputColorSpace = SRGBColorSpace;
+    this.renderer = renderer;
+
+    this.scene = new Scene();
+
+    await this.buildGUI();
+    await this.buildCamera();
+    await this.buildPostprocessing();
+
+    const loadingManager = new LoadingManager();
+    loadingManager.onStart = () => {};
+    loadingManager.onProgress = (_, loaded, total) => {
+      if (progress) {
+        progress(Math.ceil((100 * loaded) / total));
+      }
+    };
+    loadingManager.onLoad = () => {};
+    loadingManager.onError = (e) => {
+      throw e;
+    };
+    this.loadingManager = loadingManager;
+
+    return Promise.all([
+      this.buildBG(),
+      this.buildLight(),
+      this.buildCoreWire(),
+      this.buildMainWire(),
+      this.buildPole(),
+      // this.buildPole2(),
+      this.buildGrid(),
+      this.buildStatsAndClock(),
+    ]).then(() => this.restoreGUI());
+  }
+
+  async buildBG() {
+    const loader = new TextureLoader(this.loadingManager);
+    const texture = loader.load('textures/mud_road_puresky.jpg');
+    texture.colorSpace = SRGBColorSpace;
+    texture.mapping = EquirectangularReflectionMapping;
+
+    // this.scene.background = new Color('#ff0033');
+  }
+
+  async run() {
+    const audioCtx = new AudioContext();
+    const analyser = audioCtx.createAnalyser();
+    analyser.smoothingTimeConstant = 0.8;
+    analyser.minDecibels = -85;
+    analyser.maxDecibels = -30;
+    analyser.fftSize = 256;
+
+    this.mic = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false,
+    });
+    const micSource = audioCtx.createMediaStreamSource(this.mic);
+    this.micSource = micSource;
+
+    this.radio = new Audio(this.config.radio.stream);
+    this.radio.crossOrigin = 'anonymous';
+    this.radio.autoplay = false;
+
+    const radioSource = audioCtx.createMediaElementSource(this.radio);
+    this.radioSource = radioSource;
+    this.radio.onerror = (e) => {
+      console.error('radio.onerror', e);
+    };
+
+    const play = () => {
+      if (this.config.radio.play) {
+        try {
+          micSource.disconnect(analyser);
+        } catch (error) {}
+
+        radioSource.connect(analyser);
+        radioSource.connect(audioCtx.destination);
+        this.radio.play();
+      } else {
+        this.radio.pause();
+        try {
+          radioSource.disconnect(analyser);
+          radioSource.disconnect(audioCtx.destination);
+        } catch (error) {}
+
+        micSource.connect(analyser);
+      }
+    };
+
+    this.radio.oncanplay = () => {
+      play();
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key != ' ') {
+        return;
+      }
+
+      this.config.radio.play = !this.config.radio.play;
+      play();
+    });
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    let maxLoudness = 0;
+
+    this.animations.push(() => {
+      analyser.getByteFrequencyData(dataArray);
+      // console.log(dataArray);
+      // console.log(dataArray.reduce((a, b) => a + b / 256, 0));
+
+      // const nonZero = dataArray.filter((a) => a > 0);
+      // let loudness = 0;
+      // if (nonZero.length > 0) {
+      //   loudness = nonZero.reduce((a, b) => a + b / 256, 0) / nonZero.length;
+      // }
+
+      // const loudness = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+
+      // @see https://fullpipe.github.io/progress/?graph=KCd4IVsxLDI1NiwxXX5mdW5jcyFbKCdyYXchJygoQSkpICogLS8gey0rIDcoKFMpKTR9J35wYXJhbXMhKCdBITEwNX5MITJ-UyEzMil-bGFiZWwhJ1NpZ21vaWQnKV0pLTd4NCA0LCAoKEwpKX03TWF0aC5wb3d7ATc0LV8
+      const x = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+      const loudness =
+        (105 * Math.pow(x, 2)) / (Math.pow(x, 2) + Math.pow(32, 2)) / 100;
+
+      maxLoudness = Math.max(maxLoudness, loudness);
+
+      this.soundProgress = loudness;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      this.mouseProgress = e.clientX / window.innerWidth;
+    });
+
+    this.draw(0);
+  }
+
+  async destroy() {
+    this.gui.destroy();
+    this.stats.dom.remove();
+    this.renderer.dispose();
+    this.radioSource.disconnect();
+    this.micSource.disconnect();
+    this.mic.getTracks().forEach((t) => t.stop());
+    this.radio.pause();
+  }
+
+  then = 0;
+  draw(now: number) {
+    now *= 0.001;
+    const deltaTime = now - this.then;
+    this.then = now;
+
+    this.stats.begin();
+
+    if (this.config.animation.play) {
+      this.animations.forEach((update) => update(this.clock));
+    }
+
+    if (resizeRendererToDisplaySize(this.renderer)) {
+      if (this.camera instanceof PerspectiveCamera) {
+        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+        this.camera.updateProjectionMatrix();
+      }
+
+      if (this.camera instanceof OrthographicCamera) {
+        this.camera.left = -this.canvas.clientWidth / this.canvas.clientHeight;
+        this.camera.right = this.canvas.clientWidth / this.canvas.clientHeight;
+        this.camera.updateProjectionMatrix();
+      }
+
+      this.composer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+    }
+
+    this.cameraControls.update();
+
+    // this.renderer.render(this.scene, this.camera);
+    this.composer.render(deltaTime);
+
+    requestAnimationFrame((t) => this.draw(t));
+
+    this.stats.end();
+  }
+
+  async buildPostprocessing() {
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+    const gf = this.gui.addFolder('Postprocessing');
+
+    // {
+    //   const DotScreen = new ShaderPass(DotScreenShader);
+    //   DotScreen.uniforms['scale'].value = 10;
+    //   this.composer.addPass(DotScreen);
+    // }
+
+    // {
+    //   const luutPass = new LUTPass({
+    //     lut: (await this.loadLUT('asd')).texture3D,
+    //     intensity: 0.1,
+    //   });
+
+    //   luutPass.enabled = false;
+    //   this.composer.addPass(luutPass);
+
+    //   const f = gf.addFolder('LUTPass');
+    //   f.add(luutPass, 'enabled');
+    //   f.add(luutPass.uniforms['intensity'], 'value', 0, 1, 0.0001).name('intensity');
+    // }
+
+    {
+      const RGBShift = new ShaderPass(RGBShiftShader);
+      RGBShift.uniforms['amount'].value = 0.0015;
+      RGBShift.enabled = false;
+      this.composer.addPass(RGBShift);
+
+      const f = gf.addFolder('RGBShift');
+      f.add(RGBShift, 'enabled');
+      f.add(RGBShift.uniforms['amount'], 'value', 0, 1, 0.0001).name('amount');
+      f.add(RGBShift.uniforms['angle'], 'value', 0, 1, 0.0001).name('angle');
+    }
+
+    {
+      const filmPass = new FilmPass(
+        1, // intensity
+        false // grayscale
+      );
+      filmPass.enabled = false;
+
+      this.composer.addPass(filmPass);
+      console.log(filmPass.uniforms);
+      const f = gf.addFolder('FilmPass');
+      f.add(filmPass, 'enabled');
+
+      f.add((filmPass.uniforms as any)['intensity'], 'value', 0, 3, 0.1).name(
+        'intensity'
+      );
+      f.add((filmPass.uniforms as any)['grayscale'], 'value').name('grayscale');
+    }
+
+    {
+      const glitchPass = new GlitchPass();
+      glitchPass.enabled = false;
+      this.composer.addPass(glitchPass);
+      const f = gf.addFolder('GlitchPass');
+      f.add(glitchPass, 'enabled');
+      f.add(glitchPass, 'goWild');
+    }
+
+    const outputPass = new OutputPass();
+    this.composer.addPass(outputPass);
+  }
+
+  async buildGUI() {
+    this.gui = new GUI({ title: '🐞 Debug GUI', width: 300 });
+    this.gui.onFinishChange(() => {
+      const guiState = this.gui.save();
+      localStorage.setItem('guiState', JSON.stringify(guiState));
+    });
+
+    // reset GUI state button
+    const resetGui = () => {
+      localStorage.removeItem('guiState');
+      this.gui.reset();
+    };
+    this.gui.add({ resetGui }, 'resetGui').name('RESET');
+
+    const f = this.gui.addFolder('controls');
+    f.add(this.config.animation, 'play');
+
+    this.gui.close();
+  }
+
+  async restoreGUI() {
+    // load GUI state if available in local storage
+    const guiState = localStorage.getItem('guiState');
+    if (guiState) {
+      this.gui.load(JSON.parse(guiState));
+    }
+  }
+
+  async buildLight() {
+    this.directLight = new DirectionalLight(
+      this.config.light.direct.color,
+      this.config.light.direct.intensity
+    );
+    this.directLight.position.set(10, 10, 20);
+    this.scene.add(this.directLight);
+    this.scene.add(this.directLight.target);
+
+    this.ambientLight = new AmbientLight(
+      this.config.light.ambient.color,
+      this.config.light.ambient.intensity
+    );
+    this.scene.add(this.ambientLight);
+
+    const folder = this.gui.addFolder('Light');
+
+    const df = folder.addFolder('direct');
+    df.add(this.directLight, 'intensity', 0, 1, 0.1);
+    df.addColor(this.directLight, 'color');
+
+    const af = folder.addFolder('ambient');
+    af.add(this.ambientLight, 'intensity', 0, 1, 0.1);
+    af.addColor(this.ambientLight, 'color');
+  }
+
+  async buildMainWire() {
+    this.mainWire = await this.loadGtlfMesh('models/alotf-smooth.gtlf');
+    (this.mainWire.material as MeshStandardMaterial).roughness =
+      this.config.wire.main.roughness;
+    (this.mainWire.material as MeshStandardMaterial).metalness =
+      this.config.wire.main.metalness;
+    (this.mainWire.material as MeshStandardMaterial).color.setHex(
+      this.config.wire.main.color
+    );
+
+    this.scene.add(this.mainWire);
+    this.mainWire.geometry.setDrawRange(0, 0);
+
+    this.animations.push(() => {
+      this.mainWire.geometry.setDrawRange(
+        0,
+        Math.floor(this.mainWire.geometry.index?.count! * this.soundProgress)
+      );
+    });
+
+    const f = this.gui.addFolder('Main wire');
+    f.addColor(this.mainWire.material as MeshStandardMaterial, 'color');
+    f.add(
+      this.mainWire.material as MeshStandardMaterial,
+      'roughness',
+      0,
+      1,
+      0.1
+    );
+    f.add(
+      this.mainWire.material as MeshStandardMaterial,
+      'metalness',
+      0,
+      1,
+      0.1
+    );
+  }
+
+  async buildCoreWire() {
+    // this.coreWire = await this.loadGtlfMesh('models/corealot-smooth.gtlf');
+    // this.coreWire = await this.loadGtlfMesh('models/core-004-med-smooth-classname.gtlf');
+    // this.coreWire = await this.loadGtlfMesh('models/core-006-med-smooth-classname.gltf');
+    this.coreWire = await this.loadGtlfMesh(
+      'models/core-007-med-smooth-packed.gltf'
+    );
+    (this.coreWire.material as MeshStandardMaterial).roughness =
+      this.config.wire.core.roughness;
+    (this.coreWire.material as MeshStandardMaterial).metalness =
+      this.config.wire.core.metalness;
+    (this.coreWire.material as MeshStandardMaterial).color.setHex(
+      this.config.wire.core.color
+    );
+
+    this.scene.add(this.coreWire);
+    this.coreWire.geometry.setDrawRange(0, 0);
+
+    this.animations.push(() => {
+      this.coreWire.geometry.setDrawRange(
+        0,
+        Math.floor(this.coreWire.geometry.index?.count! * this.mouseProgress)
+      );
+    });
+
+    const f = this.gui.addFolder('Core wire');
+    f.addColor(this.coreWire.material as MeshStandardMaterial, 'color');
+    f.add(
+      this.coreWire.material as MeshStandardMaterial,
+      'roughness',
+      0,
+      1,
+      0.1
+    );
+    f.add(
+      this.coreWire.material as MeshStandardMaterial,
+      'metalness',
+      0,
+      1,
+      0.1
+    );
+  }
+
+  async buildPole2() {
+    const textureLoader = new TextureLoader(this.loadingManager);
+
+    const normalMap2 = textureLoader.load('textures/Water_1_M_Normal.jpg');
+    normalMap2.wrapS = normalMap2.wrapT = RepeatWrapping;
+    normalMap2.repeat.set(2, 2);
+
+    const clearcoatNormalMap = textureLoader.load(
+      'textures/Scratched_gold_01_1K_Normal.png'
+    );
+    clearcoatNormalMap.wrapS = clearcoatNormalMap.wrapT = RepeatWrapping;
+    clearcoatNormalMap.repeat.set(2, 2);
+
+    const material = new MeshPhysicalMaterial({
+      clearcoat: 0.1,
+      metalness: 0,
+      roughness: 0.7,
+      color: new Color(0x898989),
+      normalMap: normalMap2,
+      normalScale: new Vector2(1, 1),
+      clearcoatNormalMap: clearcoatNormalMap,
+      clearcoatNormalScale: new Vector2(2.0, -2.0),
+      //   toneMapped: false,
+    });
+
+    this.pole = await this.loadGtlfMesh('models/thepole-005red.gltf');
+
+    this.pole.material = material;
+    this.pole.material.needsUpdate = true;
+    this.scene.add(this.pole);
+
+    const f = this.gui.addFolder('Pole');
+    f.addColor(this.pole.material as MeshPhysicalMaterial, 'color');
+    f.add(this.pole.material as MeshPhysicalMaterial, 'roughness', 0, 1, 0.1);
+    f.add(this.pole.material as MeshPhysicalMaterial, 'metalness', 0, 1, 0.1);
+    f.add(this.pole.material as MeshPhysicalMaterial, 'clearcoat', 0, 1, 0.1);
+
+    return;
+  }
+
+  async buildPole() {
+    this.pole = await this.loadGtlfMesh('models/thepole-004.gltf');
+
+    const material = new MeshStandardMaterial({
+      roughness: this.config.wire.pole.roughness,
+      metalness: this.config.wire.pole.metalness,
+      color: this.config.wire.pole.color,
+    });
+
+    this.pole.material = material;
+
+    this.scene.add(this.pole);
+
+    const f = this.gui.addFolder('Pole');
+    f.addColor(this.pole.material as MeshStandardMaterial, 'color');
+    f.add(this.pole.material as MeshStandardMaterial, 'roughness', 0, 1, 0.1);
+    f.add(this.pole.material as MeshStandardMaterial, 'metalness', 0, 1, 0.1);
+  }
+
+  async buildGrid() {
+    const gridHelper = new GridHelper(50, 50, 'darkgray', 'darkgray');
+    gridHelper.position.y = -2;
+    this.scene.add(gridHelper);
+  }
+
+  async buildStatsAndClock() {
+    this.clock = new Clock();
+    this.stats = new Stats();
+    document.body.appendChild(this.stats.dom);
+  }
+
+  async buildCamera() {
+    // const camera = new PerspectiveCamera(50, this.canvas.clientWidth / this.canvas.clientHeight, 0.1, 100);
+    // camera.position.set(0, 0, 2);
+    // camera.lookAt(0, 0, 0);
+    // this.camera = camera;
+
+    const left = -this.canvas.clientWidth / this.canvas.clientHeight;
+    const right = this.canvas.clientWidth / this.canvas.clientHeight;
+    const top = 1;
+    const bottom = -1;
+
+    const near = -1;
+    const far = 100;
+    const ortocamera = new OrthographicCamera(
+      left,
+      right,
+      top,
+      bottom,
+      near,
+      far
+    );
+    ortocamera.zoom = 1.2;
+    this.camera = ortocamera;
+
+    this.camera.position.set(0, 0, 2);
+    this.camera.lookAt(0, 0, 0);
+
+    return this.buildControls();
+  }
+
+  async buildControls() {
+    const cameraControls = new OrbitControls(this.camera, this.canvas);
+    cameraControls.enableDamping = true;
+    cameraControls.autoRotate = true;
+    cameraControls.maxDistance = 2;
+    cameraControls.minDistance = 0.1;
+    cameraControls.minPolarAngle = Math.PI / 2.5; // минимум вверх 70
+    cameraControls.maxPolarAngle = Math.PI / 2 + Math.PI / 9; // максимум вниз (110)
+    cameraControls.minZoom = 1.2;
+    cameraControls.maxZoom = 5;
+    cameraControls.enablePan = false;
+    cameraControls.autoRotateSpeed = 1;
+
+    if (this.canvas.clientWidth < this.canvas.clientHeight) {
+      cameraControls.maxDistance = 3.5;
+      cameraControls.minZoom = 1.2;
+    }
+
+    // cameraControls.enabled = false
+    cameraControls.update();
+
+    document.addEventListener('mousemove', (e) => {
+      cameraControls.getPolarAngle();
+      this.camera.rotateY((e.clientY / window.innerHeight) * Math.PI);
+    });
+
+    this.cameraControls = cameraControls;
+
+    const f = this.gui.addFolder('Camera');
+    f.add(this.cameraControls, 'autoRotateSpeed', 0, 2, 0.1);
+    f.add(this.cameraControls, 'autoRotate');
+
+    // const dragControls = new DragControls([cube], camera, renderer.domElement);
+    // dragControls.addEventListener('hoveron', (event) => {
+    //   const mesh = event.object as Mesh;
+    //   const material = mesh.material as MeshStandardMaterial;
+    //   material.emissive.set('green');
+    // });
+    // dragControls.addEventListener('hoveroff', (event) => {
+    //   const mesh = event.object as Mesh;
+    //   const material = mesh.material as MeshStandardMaterial;
+    //   material.emissive.set('black');
+    // });
+    // dragControls.addEventListener('dragstart', (event) => {
+    //   const mesh = event.object as Mesh;
+    //   const material = mesh.material as MeshStandardMaterial;
+    //   cameraControls.enabled = false;
+    //   animation.play = false;
+    //   material.emissive.set('orange');
+    //   material.opacity = 0.7;
+    //   material.needsUpdate = true;
+    // });
+    // dragControls.addEventListener('dragend', (event) => {
+    //   cameraControls.enabled = true;
+    //   animation.play = true;
+    //   const mesh = event.object as Mesh;
+    //   const material = mesh.material as MeshStandardMaterial;
+    //   material.emissive.set('black');
+    //   material.opacity = 1;
+    //   material.needsUpdate = true;
+    // });
+    // dragControls.enabled = false;
+
+    // Full screen
+    window.addEventListener('dblclick', (event) => {
+      if (event.target === this.canvas) {
+        toggleFullScreen(this.canvas);
+      }
+    });
+  }
+
+  loadLUT(path: string) {
+    const loader = new LUTCubeLoader(this.loadingManager);
+    return loader.loadAsync(path);
+  }
+
+  loadGtlfMesh(path: string): Promise<Mesh> {
+    const loader = new GLTFLoader(this.loadingManager);
+    return new Promise((resolve, reject) => {
+      loader.load(
+        path,
+        (gltf) => {
+          console.log(path, gltf);
+          gltf.scene.traverse((child) => {
+            console.log(path, child);
+          });
+          gltf.scene.traverse((child) => {
+            if (child instanceof Mesh) {
+              resolve(child);
+            }
+          });
+
+          reject('no Mesh in ' + path);
+        },
+        () => {},
+        (error) => {
+          reject(error);
+        }
+      );
+    });
+  }
+
+  loadGtlfScene(path: string): Promise<any> {
+    const loader = new GLTFLoader(this.loadingManager);
+    return new Promise((resolve, reject) => {
+      loader.load(
+        path,
+        (gltf) => {
+          console.log(gltf.scene);
+          resolve(gltf.scene);
+        },
+        () => {},
+        (error) => {
+          reject(error);
+        }
+      );
+    });
+  }
+}

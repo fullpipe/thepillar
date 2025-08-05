@@ -1,1 +1,15 @@
 @import "gardevoir/dist/index.css";
+
+body {
+  font-family: sans-serif;
+}
+
+a {
+  cursor: pointer;
+  color: #fff;
+  text-decoration: underline;
+
+  &:hover {
+    color: grey;
+  }
+}

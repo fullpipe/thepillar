@@ -1,0 +1,41 @@
+<canvas #pillarCanvas></canvas>
+
+@if (!running()) {
+<div class="control">
+  @if(loading()) {
+  <div class="loading">
+    <div class="progress">{{ loadProgress() }}%</div>
+    <div class="bar" [style.width.%]="loadProgress()"></div>
+  </div>
+  } @else {
+  <button class="play" (click)="run()">
+    <span>▶</span>
+  </button>
+  }
+</div>
+}
+<!--
+<div class="info">
+  <a href="#" data-tippy-content="">?</a>&nbsp;
+  <a href="https://publish.obsidian.md/thepillar/thepillardiary" target="_blank"
+    >The Pillar Project</a
+  ><br />
+  <a routerLink="/">Alexandra Fiodorova</a>
+</div>
+
+<div class="popover">
+  Most of the audio is recorded from
+  <a href="http://websdr.ewi.utwente.nl:8901" target="_blank"
+    >http://websdr.ewi.utwente.nl:8901</a
+  >
+  over the span of several years. <br />
+  ---<br />
+  I hope to have my own antenna one day.<br />
+  ---<br />
+  You might occasionally hear some other things.<br />
+  ---<br />
+  If you're not alone on this page you will be hearing the sound in sync with
+  others.<br />---<br />
+  This is the part of endless
+  <a href="https://thepillar.method.education/" target="_blank">The Pillar</a>
+</div> -->
