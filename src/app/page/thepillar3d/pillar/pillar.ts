@@ -87,7 +87,7 @@ export class Pillar {
 
   config = {
     radio: {
-      play: true,
+      play: false,
       stream: 'https://stream.zeno.fm/u49yw4kjumhtv',
     },
     light: {
@@ -164,7 +164,8 @@ export class Pillar {
       this.buildLight(),
       this.buildCoreWireSeparate(),
       // this.buildCoreWire(),
-      this.buildMainWire(),
+      // this.buildMainWire(),
+      this.buildMainWireSeparate(),
       this.buildPole(),
       // this.buildPole2(),
       this.buildGrid(),
@@ -239,7 +240,8 @@ export class Pillar {
       // this.mouseProgressX = e.clientX / window.innerWidth;
       // this.mouseProgressY = e.clientY / window.innerHeight;
       this.mouseProgressX = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
-      this.mouseProgressY = Math.abs(e.clientY / window.innerHeight - 0.5) * 2;
+      this.mouseProgressY = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
+      // this.mouseProgressY = Math.abs(e.clientY / window.innerHeight - 0.5) * 2;
     });
   }
 
@@ -328,6 +330,8 @@ export class Pillar {
 
       this.soundProgress = loudness;
     });
+
+    this.reactOnSound = true;
 
     this.draw(0);
   }
@@ -544,11 +548,44 @@ export class Pillar {
     );
   }
 
+  async buildMainWireSeparate() {
+    return Promise.all(
+      [...Array(150).keys()].map(async (idx) => {
+        const wire = await this.loadGtlfMesh(
+          `models/mass-separate-001/mass-001-sm-${String(idx + 1).padStart(
+            3,
+            '0'
+          )}.glb`
+        );
+
+        const material = new MeshStandardMaterial({
+          roughness: this.config.wire.main.roughness,
+          metalness: this.config.wire.main.metalness,
+          color: this.config.wire.main.color,
+        });
+        wire.material = material;
+
+        this.scene.add(wire);
+        wire.geometry.setDrawRange(0, 0);
+        this.animations.push(() => {
+          const progress = this.reactOnSound
+            ? this.soundProgress
+            : this.mouseProgressY;
+
+          wire.geometry.setDrawRange(
+            0,
+            Math.floor(wire.geometry.index?.count! * progress)
+          );
+        });
+      })
+    );
+  }
+
   async buildCoreWireSeparate() {
     return Promise.all(
-      [...Array(48).keys()].map(async (idx) => {
+      [...Array(49).keys()].map(async (idx) => {
         const wire = await this.loadGtlfMesh(
-          `models/core-separate-001/ore-008-med-${String(idx + 1).padStart(
+          `models/core-separate-002/core-009-sm-${String(idx + 1).padStart(
             3,
             '0'
           )}.glb`
@@ -564,9 +601,13 @@ export class Pillar {
         this.scene.add(wire);
         wire.geometry.setDrawRange(0, 0);
         this.animations.push(() => {
+          const progress = this.reactOnSound
+            ? this.soundProgress
+            : this.mouseProgressX;
+
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * this.mouseProgressX)
+            Math.floor(wire.geometry.index?.count! * progress)
           );
         });
       })
@@ -574,11 +615,15 @@ export class Pillar {
   }
   async buildCoreWire() {
     // this.coreWire = await this.loadGtlfMesh('models/corealot-smooth.gtlf');
-    // this.coreWire = await this.loadGtlfMesh('models/core-004-med-smooth-classname.gtlf');
-    // this.coreWire = await this.loadGtlfMesh('models/core-006-med-smooth-classname.gltf');
     this.coreWire = await this.loadGtlfMesh(
-      'models/core-007-med-smooth-packed.gltf'
+      'models/core-004-med-smooth-classname.gtlf'
     );
+
+    // this.coreWire = await this.loadGtlfMesh('models/core-006-med-smooth-classname.gltf');
+    // this.coreWire = await this.loadGtlfMesh(
+    //   'models/core-007-med-smooth-packed.gltf'
+    // );
+
     (this.coreWire.material as MeshStandardMaterial).roughness =
       this.config.wire.core.roughness;
     (this.coreWire.material as MeshStandardMaterial).metalness =
@@ -797,6 +842,12 @@ export class Pillar {
       loader.load(
         path,
         (gltf) => {
+          gltf.scene.traverse(function (child) {
+            console.log(child.name);
+          });
+          // console.log(gltf.scene.getObjectByProperty('class', '001'));
+          // console.log(gltf.scene.getObjectByProperty('class', 1));
+          // console.log(gltf.scene.getObjectByName('piece01'));
           // console.log(path, gltf);
           // gltf.scene.traverse((child) => {
           //   console.log(path, child);
