@@ -47,6 +47,7 @@ import { LUTCubeLoader } from 'three/addons/loaders/LUTCubeLoader.js';
 import { toggleFullScreen } from './helpers/fullscreen';
 import Stats from 'stats.js';
 import { resizeRendererToDisplaySize } from './helpers/responsiveness';
+import { Sound } from './sound';
 
 export class Pillar {
   canvas: HTMLElement;
@@ -77,12 +78,7 @@ export class Pillar {
   mouseProgressY = 0.5;
   soundProgress = 0.5;
 
-  radio!: HTMLMediaElement;
-  radioSource!: MediaElementAudioSourceNode;
-
-  mic!: MediaStream;
-  micSource!: MediaStreamAudioSourceNode;
-
+  sound!: Sound;
   reactOnSound = false;
 
   config = {
@@ -170,6 +166,7 @@ export class Pillar {
       // this.buildPole2(),
       this.buildGrid(),
       this.buildStatsAndClock(),
+      this.buildSound(),
       this.mouseTracking(),
     ]).then(() => this.restoreGUI());
   }
@@ -245,109 +242,51 @@ export class Pillar {
     });
   }
 
+  async buildSound() {
+    this.sound = new Sound();
+    await this.sound.start();
+  }
+
   async run() {
-    const audioCtx = new AudioContext();
-    const analyser = audioCtx.createAnalyser();
-    analyser.smoothingTimeConstant = 0.8;
-    analyser.minDecibels = -85;
-    analyser.maxDecibels = -30;
-    analyser.fftSize = 256;
-
-    this.mic = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false,
+    this.reactOnSound = true;
+    this.animations.push(() => {
+      this.soundProgress = this.sound.progress;
     });
-    const micSource = audioCtx.createMediaStreamSource(this.mic);
-    this.micSource = micSource;
 
-    this.radio = new Audio(this.config.radio.stream);
-    this.radio.crossOrigin = 'anonymous';
-    this.radio.autoplay = false;
-
-    const radioSource = audioCtx.createMediaElementSource(this.radio);
-    this.radioSource = radioSource;
-    this.radio.onerror = (e) => {
-      console.error('radio.onerror', e);
-    };
-
-    const play = () => {
-      if (this.config.radio.play) {
-        try {
-          micSource.disconnect(analyser);
-        } catch (error) {}
-
-        radioSource.connect(analyser);
-        radioSource.connect(audioCtx.destination);
-        this.radio.play();
-      } else {
-        this.radio.pause();
-        try {
-          radioSource.disconnect(analyser);
-          radioSource.disconnect(audioCtx.destination);
-        } catch (error) {}
-
-        micSource.connect(analyser);
-      }
-    };
-
-    this.radio.oncanplay = () => {
-      play();
-    };
+    const soundSources: ('music' | 'radio' | 'mic')[] = [
+      'music',
+      'radio',
+      'mic',
+    ];
+    let soundSourceIdx = 0;
 
     document.addEventListener('keydown', (e) => {
       if (e.key != ' ') {
         return;
       }
 
-      this.config.radio.play = !this.config.radio.play;
-      play();
+      soundSourceIdx = (soundSourceIdx + 1) % soundSources.length;
+      this.sound.play(soundSources[soundSourceIdx]);
     });
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    let maxLoudness = 0;
-
-    this.animations.push(() => {
-      analyser.getByteFrequencyData(dataArray);
-      // console.log(dataArray);
-      // console.log(dataArray.reduce((a, b) => a + b / 256, 0));
-
-      // const nonZero = dataArray.filter((a) => a > 0);
-      // let loudness = 0;
-      // if (nonZero.length > 0) {
-      //   loudness = nonZero.reduce((a, b) => a + b / 256, 0) / nonZero.length;
-      // }
-
-      // const loudness = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-
-      // @see https://fullpipe.github.io/progress/?graph=KCd4IVsxLDI1NiwxXX5mdW5jcyFbKCdyYXchJygoQSkpICogLS8gey0rIDcoKFMpKTR9J35wYXJhbXMhKCdBITEwNX5MITJ-UyEzMil-bGFiZWwhJ1NpZ21vaWQnKV0pLTd4NCA0LCAoKEwpKX03TWF0aC5wb3d7ATc0LV8
-      const x = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-      const loudness =
-        (105 * Math.pow(x, 2)) / (Math.pow(x, 2) + Math.pow(32, 2)) / 100;
-
-      maxLoudness = Math.max(maxLoudness, loudness);
-
-      this.soundProgress = loudness;
-    });
-
-    this.reactOnSound = true;
-
-    this.draw(0);
+    this.sound.play(soundSources[soundSourceIdx]);
   }
 
+  shutdown = false;
   async destroy() {
+    this.shutdown = true;
     this.gui.destroy();
     this.stats.dom.remove();
     this.renderer.dispose();
-    this.radioSource.disconnect();
-    this.micSource.disconnect();
-    this.mic.getTracks().forEach((t) => t.stop());
-    this.radio.pause();
+    this.sound.destroy();
   }
 
   then = 0;
   draw(now: number) {
+    if (this.shutdown) {
+      return;
+    }
+
     now *= 0.001;
     const deltaTime = now - this.then;
     this.then = now;
@@ -842,9 +781,9 @@ export class Pillar {
       loader.load(
         path,
         (gltf) => {
-          gltf.scene.traverse(function (child) {
-            console.log(child.name);
-          });
+          // gltf.scene.traverse(function (child) {
+          //   console.log(child.name);
+          // });
           // console.log(gltf.scene.getObjectByProperty('class', '001'));
           // console.log(gltf.scene.getObjectByProperty('class', 1));
           // console.log(gltf.scene.getObjectByName('piece01'));
