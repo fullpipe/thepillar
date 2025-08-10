@@ -1,3 +1,9 @@
+export enum SoundSource {
+  Music,
+  Radio,
+  Mic,
+}
+
 export class Sound {
   radio!: HTMLMediaElement;
   radioSource!: MediaElementAudioSourceNode;
@@ -62,6 +68,10 @@ export class Sound {
   }
 
   async initMusic() {
+    if (this.music) {
+      return;
+    }
+
     const idx = Math.ceil(Math.random() * 19);
     this.music = new Audio(`/ogg-lofi/${idx}-lo.ogg`);
     this.music.crossOrigin = 'anonymous';
@@ -78,9 +88,11 @@ export class Sound {
 
   stopAll() {
     if (this.radioSource) {
+      this.radio.pause();
       this.radioSource.disconnect();
     }
     if (this.musicSource) {
+      this.music.pause();
       this.musicSource.disconnect();
     }
     if (this.micSource) {
@@ -88,22 +100,22 @@ export class Sound {
     }
   }
 
-  async play(source: 'music' | 'radio' | 'mic') {
+  async play(source: SoundSource) {
     this.stopAll();
     switch (source) {
-      case 'music':
+      case SoundSource.Music:
         await this.initMusic();
         this.musicSource.connect(this.analyser);
         this.musicSource.connect(this.audioCtx.destination);
         this.music.play();
         break;
-      case 'radio':
+      case SoundSource.Radio:
         await this.initRadio();
         this.radioSource.connect(this.analyser);
         this.radioSource.connect(this.audioCtx.destination);
         this.radio.play();
         break;
-      case 'mic':
+      case SoundSource.Mic:
         await this.initMic();
         this.micSource.connect(this.analyser);
         break;

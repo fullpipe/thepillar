@@ -9,9 +9,26 @@
   </div>
   } @else {
   <button class="play" (click)="run()">
-    <span>▶</span>
+    <ng-icon name="heroPlay" />
   </button>
   }
+</div>
+} @if (running()) {
+<div class="switch">
+  <ng-icon
+    [class.active]="pillar.soundSource() == SoundSource.Music"
+    name="heroSpeakerWave"
+  />
+  <ng-icon
+    [class.active]="pillar.soundSource() == SoundSource.Radio"
+    name="heroRadio"
+  />
+  <ng-icon
+    [class.active]="pillar.soundSource() == SoundSource.Mic"
+    name="heroMicrophone"
+  />
+  <!-- <ng-icon name="heroSpeakerXMark" />
+  <ng-icon name="heroArrowsPointingOut" /> -->
 </div>
 }
 <!--

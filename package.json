@@ -26,6 +26,8 @@
     "@angular/forms": "^20.1.0",
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
+    "@ng-icons/core": "^32.1.0",
+    "@ng-icons/heroicons": "^32.1.0",
     "@types/three": "^0.179.0",
     "gardevoir": "^1.0.0",
     "lil-gui": "^0.20.0",

@@ -13,6 +13,28 @@ canvas {
   background: linear-gradient(#809da2, #a1b5b9);
 }
 
+.switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  gap: 0.67em;
+
+  position: absolute;
+  bottom: 0.67em;
+  right: 0.67em;
+
+  ng-icon {
+    color: white;
+    font-size: large;
+
+    &.active {
+      cursor: default;
+      color: #898989;
+    }
+  }
+}
+
 .control {
   display: flex;
   justify-content: center;
@@ -49,19 +71,13 @@ canvas {
   .play {
     cursor: pointer;
     background: none;
-    border: 2px solid #fff;
-    border-radius: 999px;
+    border: none;
     color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    width: 4em;
-    height: 4em;
     scale: 1;
-    span {
-      font-size: 1.2em;
+    font-size: 1.62em;
+    padding: 0.62em;
+    ng-icon {
+      color: #fff;
     }
 
     &:hover {

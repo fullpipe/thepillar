@@ -1,11 +1,33 @@
 import { Component, ElementRef, signal, viewChild } from '@angular/core';
 import { Pillar } from './pillar/pillar';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroArrowsPointingOut,
+  heroMicrophone,
+  heroPlay,
+  heroPlayCircle,
+  heroRadio,
+  heroSpeakerWave,
+  heroSpeakerXMark,
+} from '@ng-icons/heroicons/outline';
+import { SoundSource } from './pillar/sound';
 
 @Component({
   selector: 'app-thepillar3d',
-  imports: [],
+  imports: [NgIcon],
   templateUrl: './thepillar3d.html',
   styleUrl: './thepillar3d.scss',
+  viewProviders: [
+    provideIcons({
+      heroSpeakerWave,
+      heroSpeakerXMark,
+      heroRadio,
+      heroMicrophone,
+      heroArrowsPointingOut,
+      heroPlay,
+      heroPlayCircle,
+    }),
+  ],
 })
 export class Thepillar3d {
   canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('pillarCanvas');
@@ -13,6 +35,7 @@ export class Thepillar3d {
   loading = signal(true);
   loadProgress = signal(0);
   running = signal(false);
+  SoundSource = SoundSource;
 
   constructor() {}
 
@@ -27,8 +50,8 @@ export class Thepillar3d {
     this.pillar.destroy();
   }
 
-  run() {
-    this.pillar.run();
+  async run() {
+    await this.pillar.run();
     this.running.set(true);
   }
 }

@@ -47,7 +47,8 @@ import { LUTCubeLoader } from 'three/addons/loaders/LUTCubeLoader.js';
 import { toggleFullScreen } from './helpers/fullscreen';
 import Stats from 'stats.js';
 import { resizeRendererToDisplaySize } from './helpers/responsiveness';
-import { Sound } from './sound';
+import { Sound, SoundSource } from './sound';
+import { signal } from '@angular/core';
 
 export class Pillar {
   canvas: HTMLElement;
@@ -79,6 +80,7 @@ export class Pillar {
   soundProgress = 0.5;
 
   sound!: Sound;
+  soundSource = signal(SoundSource.Music);
   reactOnSound = false;
 
   config = {
@@ -172,7 +174,7 @@ export class Pillar {
   }
 
   async buildBG() {
-    const geometry = new SphereGeometry(20, 32, 32);
+    const geometry = new SphereGeometry(50, 32, 32);
     geometry.computeBoundingBox();
 
     var material = new ShaderMaterial({
@@ -244,32 +246,26 @@ export class Pillar {
 
   async buildSound() {
     this.sound = new Sound();
-    await this.sound.start();
   }
 
   async run() {
+    await this.sound.start();
+
     this.reactOnSound = true;
     this.animations.push(() => {
       this.soundProgress = this.sound.progress;
     });
-
-    const soundSources: ('music' | 'radio' | 'mic')[] = [
-      'music',
-      'radio',
-      'mic',
-    ];
-    let soundSourceIdx = 0;
 
     document.addEventListener('keydown', (e) => {
       if (e.key != ' ') {
         return;
       }
 
-      soundSourceIdx = (soundSourceIdx + 1) % soundSources.length;
-      this.sound.play(soundSources[soundSourceIdx]);
+      this.soundSource.set((this.soundSource() + 1) % 3);
+      this.sound.play(this.soundSource() as SoundSource);
     });
 
-    this.sound.play(soundSources[soundSourceIdx]);
+    this.sound.play(this.soundSource());
   }
 
   shutdown = false;
@@ -659,7 +655,7 @@ export class Pillar {
   }
 
   async buildGrid() {
-    const gridHelper = new GridHelper(50, 50, 'darkgray', 'darkgray');
+    const gridHelper = new GridHelper(50, 50, 'white', 'white');
     gridHelper.position.y = -2;
     this.scene.add(gridHelper);
   }
