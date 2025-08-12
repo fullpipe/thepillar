@@ -51,7 +51,7 @@ export class Thepillar3d {
   }
 
   async run() {
-    await this.pillar.run();
     this.running.set(true);
+    await this.pillar.run();
   }
 }

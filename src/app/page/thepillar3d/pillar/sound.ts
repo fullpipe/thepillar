@@ -23,12 +23,14 @@ export class Sound {
     },
   };
 
-  audioCtx = new AudioContext();
-  analyser = this.audioCtx.createAnalyser();
+  audioCtx!: AudioContext;
+  analyser!: AnalyserNode;
   bufferLength: number;
   dataArray: Uint8Array;
 
   constructor() {
+    this.audioCtx = new AudioContext();
+    this.analyser = this.audioCtx.createAnalyser();
     this.analyser.smoothingTimeConstant = 0.8;
     this.analyser.minDecibels = -85;
     this.analyser.maxDecibels = -30;
@@ -58,7 +60,7 @@ export class Sound {
     this.radio = new Audio(this.config.radio.stream);
     this.radio.crossOrigin = 'anonymous';
     this.radio.autoplay = false;
-    this.radio.preload = 'auto';
+    this.radio.preload = 'none';
 
     const radioSource = this.audioCtx.createMediaElementSource(this.radio);
     this.radioSource = radioSource;
@@ -73,7 +75,8 @@ export class Sound {
     }
 
     const idx = Math.ceil(Math.random() * 19);
-    this.music = new Audio(`/ogg-lofi/${idx}-lo.ogg`);
+    const music = new Audio(`/ogg-lofi/${idx}-lo.ogg`);
+    this.music = music;
     this.music.crossOrigin = 'anonymous';
     this.music.autoplay = false;
     this.music.preload = 'auto';
@@ -81,9 +84,19 @@ export class Sound {
 
     const musicSource = this.audioCtx.createMediaElementSource(this.music);
     this.musicSource = musicSource;
-    this.music.onerror = (e) => {
-      console.error('radio.onerror', e);
-    };
+
+    // const canplay = new Promise<void>((resolve, reject) => {
+    //   music.addEventListener('canplay', () => {
+    //     resolve();
+    //   });
+    //   music.addEventListener('error', () => {
+    //     reject();
+    //   });
+    // });
+
+    // this.music.load();
+
+    return;
   }
 
   stopAll() {
@@ -124,7 +137,16 @@ export class Sound {
     this.analize = true;
   }
 
-  async start() {
+  async init() {
+    this.audioCtx = new AudioContext();
+    this.analyser = this.audioCtx.createAnalyser();
+    this.analyser.smoothingTimeConstant = 0.8;
+    this.analyser.minDecibels = -85;
+    this.analyser.maxDecibels = -30;
+    this.analyser.fftSize = 256;
+    this.bufferLength = this.analyser.frequencyBinCount;
+    this.dataArray = new Uint8Array(this.bufferLength);
+
     await this.initMusic();
     await this.initRadio();
 

@@ -74,10 +74,10 @@ export class Pillar {
 
   animations: ((clock: Clock) => void)[] = [];
 
-  mouseProgress = 0.5;
-  mouseProgressX = 0.5;
-  mouseProgressY = 0.5;
-  soundProgress = 0.5;
+  mouseProgress = 0.0;
+  mouseProgressX = 0.0;
+  mouseProgressY = 0.0;
+  soundProgress = 0.0;
 
   sound!: Sound;
   soundSource = signal(SoundSource.Music);
@@ -249,7 +249,7 @@ export class Pillar {
   }
 
   async run() {
-    await this.sound.start();
+    await this.sound.init();
 
     this.reactOnSound = true;
     this.animations.push(() => {
