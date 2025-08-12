@@ -84,9 +84,11 @@ export class Pillar {
   reactOnSound = false;
 
   config = {
-    radio: {
-      play: false,
-      stream: 'https://stream.zeno.fm/u49yw4kjumhtv',
+    speed: {
+      core: {},
+      main: {
+        minStart: 0.2,
+      },
     },
     light: {
       direct: {
@@ -502,10 +504,19 @@ export class Pillar {
 
         this.scene.add(wire);
         wire.geometry.setDrawRange(0, 0);
+
+        const randomStart = 0.2 + 0.4 * Math.random();
+        const randomDuration = (1 - randomStart) * (0.5 * Math.random());
+        const speed = 1 / (1 - randomDuration);
+
         this.animations.push(() => {
-          const progress = this.reactOnSound
+          let progress = this.reactOnSound
             ? this.soundProgress
             : this.mouseProgressY;
+
+          progress -= randomStart;
+          progress *= speed;
+          progress = Math.max(progress, 0);
 
           wire.geometry.setDrawRange(
             0,
@@ -535,10 +546,19 @@ export class Pillar {
 
         this.scene.add(wire);
         wire.geometry.setDrawRange(0, 0);
+
+        const randomStart = 0.1 * Math.random();
+        const randomDuration = (1 - randomStart) * (0.1 * Math.random());
+        const speed = 1 / (1 - randomDuration);
+
         this.animations.push(() => {
-          const progress = this.reactOnSound
+          let progress = this.reactOnSound
             ? this.soundProgress
             : this.mouseProgressX;
+
+          progress -= randomStart;
+          progress *= speed;
+          progress = Math.max(progress, 0);
 
           wire.geometry.setDrawRange(
             0,
