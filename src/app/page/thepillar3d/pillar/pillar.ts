@@ -182,10 +182,10 @@ export class Pillar {
     var material = new ShaderMaterial({
       uniforms: {
         color1: {
-          value: new Color('#a1b5b9'),
+          value: new Color('#111111'),
         },
         color2: {
-          value: new Color('#809da2'),
+          value: new Color('#000000'),
         },
         bboxMin: {
           value: geometry.boundingBox!.min,
