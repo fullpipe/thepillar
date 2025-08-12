@@ -1,3 +1,5 @@
+import { Signal } from '@angular/core';
+
 export enum SoundSource {
   Music,
   Radio,
@@ -16,6 +18,8 @@ export class Sound {
 
   progress = 0;
   analize = false;
+
+  mixer!: Mixer;
 
   config = {
     radio: {
@@ -137,6 +141,23 @@ export class Sound {
     this.analize = true;
   }
 
+  async loadTrack(path: string): Promise<HTMLAudioElement> {
+    const track = new Audio();
+    track.crossOrigin = 'anonymous';
+    track.autoplay = false;
+    track.preload = 'auto';
+    track.loop = true;
+
+    const canplaythrough = new Promise<HTMLAudioElement>((resolve, reject) => {
+      track.addEventListener('canplaythrough', () => resolve(track), false);
+    });
+
+    track.src = path;
+    track.load();
+
+    return canplaythrough;
+  }
+
   async init() {
     this.audioCtx = new AudioContext();
     this.analyser = this.audioCtx.createAnalyser();
@@ -147,8 +168,37 @@ export class Sound {
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Uint8Array(this.bufferLength);
 
-    await this.initMusic();
+    // await this.initMusic();
+
+    const mixer = new Mixer(this.audioCtx);
+    this.mixer = mixer;
+
+    for (let i = 0; i < 10; i++) {
+      const idx = Math.ceil(Math.random() * 19);
+      const track = await this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
+
+      const source = this.audioCtx.createMediaElementSource(track);
+
+      mixer.add(i, source);
+
+      track.play();
+    }
+
     await this.initRadio();
+    this.radio.play();
+    mixer.add('radio', this.radioSource);
+
+    try {
+      await this.initMic();
+      mixer.add('mic', this.micSource, true);
+    } catch (error) {}
+
+    mixer.connectAnalizer(this.analyser);
+    mixer.connect(this.audioCtx.destination);
+
+    // this.radio.play();
+    // this.music.play();
+    this.analize = true;
 
     const update = () => {
       if (!this.analize) {
@@ -190,5 +240,44 @@ export class Sound {
 
     this.musicSource.disconnect();
     this.music.pause();
+  }
+}
+
+class Mixer {
+  inputs: { [key: string | number]: GainNode } = {};
+
+  output: AudioNode;
+  analizerOutput: AudioNode;
+
+  constructor(private ctx: AudioContext) {
+    this.output = this.ctx.createGain();
+    this.analizerOutput = this.ctx.createGain();
+  }
+
+  setGain(name: string | number, gain: number) {
+    this.inputs[name].gain.setValueAtTime(gain, this.ctx.currentTime);
+  }
+
+  add(name: string | number, source: AudioNode, silent?: boolean) {
+    const gain = this.ctx.createGain();
+
+    source.connect(gain);
+
+    this.inputs[name] = gain;
+
+    gain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+    if (!silent) {
+      gain.connect(this.output);
+    }
+    gain.connect(this.analizerOutput);
+  }
+
+  connect(destination: AudioNode) {
+    this.output.connect(destination);
+  }
+
+  connectAnalizer(destination: AnalyserNode) {
+    this.analizerOutput.connect(destination);
   }
 }

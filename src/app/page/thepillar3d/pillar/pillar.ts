@@ -258,16 +258,16 @@ export class Pillar {
       this.soundProgress = this.sound.progress;
     });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key != ' ') {
-        return;
-      }
+    // document.addEventListener('keydown', (e) => {
+    //   if (e.key != ' ') {
+    //     return;
+    //   }
 
-      this.soundSource.set((this.soundSource() + 1) % 3);
-      this.sound.play(this.soundSource() as SoundSource);
-    });
+    //   this.soundSource.set((this.soundSource() + 1) % 3);
+    //   this.sound.play(this.soundSource() as SoundSource);
+    // });
 
-    this.sound.play(this.soundSource());
+    // this.sound.play(this.soundSource());
   }
 
   shutdown = false;
