@@ -14,45 +14,60 @@
   }
 </div>
 } @if (running()) {
-<div class="switch">
-  <ng-icon
-    [class.active]="pillar.soundSource() == SoundSource.Music"
-    name="heroSpeakerWave"
-  />
-  <ng-icon
-    [class.active]="pillar.soundSource() == SoundSource.Radio"
-    name="heroRadio"
-  />
-  <ng-icon
-    [class.active]="pillar.soundSource() == SoundSource.Mic"
-    name="heroMicrophone"
-  />
+<div class="switch" [class.is_active]="isActive$ | async">
+  <div class="gains">
+    <table>
+      @for (gain of gains; track $index; let idx = $index) {
+      <tr>
+        <td></td>
+        <td>
+          <input
+            type="range"
+            [name]="'gain' + idx"
+            min="0"
+            max="100"
+            [(ngModel)]="gain"
+          />
+        </td>
+      </tr>
+      }
+
+      <tr>
+        <td>
+          <ng-icon name="heroMicrophone" />
+        </td>
+        <td>
+          <input
+            type="range"
+            [name]="'mic-gain'"
+            min="0"
+            max="100"
+            [(ngModel)]="micGain"
+          />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <ng-icon name="heroRadio" />
+        </td>
+        <td>
+          <input
+            type="range"
+            [name]="'radio-gain'"
+            min="0"
+            max="100"
+            [(ngModel)]="radioGain"
+          />
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <button class="roll" (click)="roll()">
+    <ng-icon name="heroArrowPathRoundedSquare" />
+  </button>
+
   <!-- <ng-icon name="heroSpeakerXMark" />
   <ng-icon name="heroArrowsPointingOut" /> -->
 </div>
 }
-<!--
-<div class="info">
-  <a href="#" data-tippy-content="">?</a>&nbsp;
-  <a href="https://publish.obsidian.md/thepillar/thepillardiary" target="_blank"
-    >The Pillar Project</a
-  ><br />
-  <a routerLink="/">Alexandra Fiodorova</a>
-</div>
-
-<div class="popover">
-  Most of the audio is recorded from
-  <a href="http://websdr.ewi.utwente.nl:8901" target="_blank"
-    >http://websdr.ewi.utwente.nl:8901</a
-  >
-  over the span of several years. <br />
-  ---<br />
-  I hope to have my own antenna one day.<br />
-  ---<br />
-  You might occasionally hear some other things.<br />
-  ---<br />
-  If you're not alone on this page you will be hearing the sound in sync with
-  others.<br />---<br />
-  This is the part of endless
-  <a href="https://thepillar.method.education/" target="_blank">The Pillar</a>
-</div> -->
