@@ -25,7 +25,10 @@ canvas {
   bottom: 0.67em;
   right: 0.67em;
 
-  opacity: 0.2;
+  @media screen and (max-width: 767px) {
+    opacity: 0.2;
+  }
+
   transition: opacity 0.2s ease-out;
 
   ng-icon {
@@ -47,7 +50,9 @@ canvas {
   .gains {
     display: flex;
     flex-direction: column;
-    opacity: 0;
+    @media screen and (max-width: 767px) {
+      opacity: 0.2;
+    }
     transition: opacity 0.2s ease-out;
 
     --color-track: #ffffff;
