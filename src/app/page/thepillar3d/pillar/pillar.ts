@@ -112,9 +112,9 @@ export class Pillar {
         color: 0xffffff,
       },
       pole: {
-        roughness: 0.0,
+        roughness: 0.6,
         metalness: 0.0,
-        color: 0x898989,
+        color: 0xe6e6e6,
       },
     },
     animation: {
