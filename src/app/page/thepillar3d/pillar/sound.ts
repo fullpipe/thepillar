@@ -1,5 +1,3 @@
-import { Signal } from '@angular/core';
-
 export enum SoundSource {
   Music,
   Radio,
@@ -168,21 +166,22 @@ export class Sound {
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Uint8Array(this.bufferLength);
 
-    // await this.initMusic();
-
     const mixer = new Mixer(this.audioCtx);
     this.mixer = mixer;
 
-    for (let i = 0; i < 10; i++) {
-      const idx = Math.ceil(Math.random() * 19);
-      const track = await this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
+    const tracks = await Promise.all(
+      [...Array(10).keys()].map(() => {
+        const idx = Math.ceil(Math.random() * 19);
+        return this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
+      })
+    );
 
+    tracks.forEach((track, i) => {
       const source = this.audioCtx.createMediaElementSource(track);
-
       mixer.add(i, source);
 
       track.play();
-    }
+    });
 
     await this.initRadio();
     this.radio.play();
@@ -196,8 +195,6 @@ export class Sound {
     mixer.connectAnalizer(this.analyser);
     mixer.connect(this.audioCtx.destination);
 
-    // this.radio.play();
-    // this.music.play();
     this.analize = true;
 
     const update = () => {
