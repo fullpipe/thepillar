@@ -49,6 +49,55 @@ canvas {
     flex-direction: column;
     opacity: 0;
     transition: opacity 0.2s ease-out;
+
+    --color-track: #9a905d;
+    --color-progress: #43e5f7;
+    --color-thumb: #434343;
+
+    input[type="range"] {
+      border: 0;
+      padding: 0;
+    }
+
+    /*Chrome*/
+    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      input[type="range"] {
+        overflow: hidden;
+        width: 80px;
+        -webkit-appearance: none;
+        background-color: var(--color-track);
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 10px;
+        -webkit-appearance: none;
+        color: var(--color-progress);
+        margin-top: -1px;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 10px;
+        -webkit-appearance: none;
+        height: 10px;
+        cursor: ew-resize;
+        background: var(--color-thumb);
+        box-shadow: -80px 0 0 80px var(--color-progress);
+      }
+    }
+    /** FF*/
+    input[type="range"]::-moz-range-progress {
+      background-color: var(--color-progress);
+    }
+    input[type="range"]::-moz-range-track {
+      background-color: var(--color-track);
+    }
+    /* IE*/
+    input[type="range"]::-ms-fill-lower {
+      background-color: var(--color-progress);
+    }
+    input[type="range"]::-ms-fill-upper {
+      background-color: var(--color-track);
+    }
   }
 
   &.is_active {
