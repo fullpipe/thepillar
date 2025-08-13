@@ -2,7 +2,6 @@ import {
   Component,
   effect,
   ElementRef,
-  Signal,
   signal,
   viewChild,
   WritableSignal,
@@ -12,6 +11,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   heroArrowPathRoundedSquare,
   heroArrowsPointingOut,
+  heroEllipsisHorizontal,
   heroMicrophone,
   heroPlay,
   heroPlayCircle,
@@ -48,6 +48,7 @@ import { AsyncPipe } from '@angular/common';
       heroPlay,
       heroPlayCircle,
       heroArrowPathRoundedSquare,
+      heroEllipsisHorizontal,
     }),
   ],
 })
@@ -57,6 +58,7 @@ export class Thepillar3d {
   sound!: Sound;
   loading = signal(true);
   loadProgress = signal(0);
+  prerunning = signal(false);
   running = signal(false);
 
   private reset$ = new Subject<boolean>();
@@ -121,12 +123,15 @@ export class Thepillar3d {
   }
 
   async run() {
-    this.running.set(true);
+    this.prerunning.set(true);
     await this.pillar.run();
 
     this.sound = this.pillar.sound;
 
     this.roll();
+
+    this.prerunning.set(false);
+    this.running.set(true);
   }
 
   async roll() {

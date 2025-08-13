@@ -7,11 +7,15 @@
     <div class="progress">{{ loadProgress() }}%</div>
     <div class="bar" [style.width.%]="loadProgress()"></div>
   </div>
+  } @else { @if(prerunning()) {
+  <div class="play">
+    <ng-icon name="heroEllipsisHorizontal" />
+  </div>
   } @else {
   <button class="play" (click)="run()">
     <ng-icon name="heroPlay" />
   </button>
-  }
+  } }
 </div>
 } @if (running()) {
 <div class="switch" [class.is_active]="isActive$ | async">
