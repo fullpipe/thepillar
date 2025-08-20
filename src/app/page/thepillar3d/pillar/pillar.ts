@@ -12,19 +12,11 @@ import {
   GridHelper,
   Clock,
   Camera,
-  MeshPhysicalMaterial,
-  Vector2,
-  TextureLoader,
-  RepeatWrapping,
   ColorManagement,
   SRGBColorSpace,
   Color,
-  EquirectangularReflectionMapping,
-  Sphere,
-  Vector3,
   BackSide,
   SphereGeometry,
-  MeshBasicMaterial,
   ShaderMaterial,
 } from 'three';
 
@@ -163,11 +155,8 @@ export class Pillar {
       this.buildBG(),
       this.buildLight(),
       this.buildCoreWireSeparate(),
-      // this.buildCoreWire(),
-      // this.buildMainWire(),
       this.buildMainWireSeparate(),
       this.buildPole(),
-      // this.buildPole2(),
       this.buildGrid(),
       this.buildStatsAndClock(),
       this.buildSound(),
@@ -443,48 +432,6 @@ export class Pillar {
     af.addColor(this.ambientLight, 'color');
   }
 
-  async buildMainWire() {
-    this.mainWire = await this.loadGtlfMesh('models/alotf-smooth.gtlf');
-    (this.mainWire.material as MeshStandardMaterial).roughness =
-      this.config.wire.main.roughness;
-    (this.mainWire.material as MeshStandardMaterial).metalness =
-      this.config.wire.main.metalness;
-    (this.mainWire.material as MeshStandardMaterial).color.setHex(
-      this.config.wire.main.color
-    );
-
-    this.scene.add(this.mainWire);
-    this.mainWire.geometry.setDrawRange(0, 0);
-
-    this.animations.push(() => {
-      const progress = this.reactOnSound
-        ? this.soundProgress
-        : this.mouseProgressY;
-
-      this.mainWire.geometry.setDrawRange(
-        0,
-        Math.floor(this.mainWire.geometry.index?.count! * progress)
-      );
-    });
-
-    const f = this.gui.addFolder('Main wire');
-    f.addColor(this.mainWire.material as MeshStandardMaterial, 'color');
-    f.add(
-      this.mainWire.material as MeshStandardMaterial,
-      'roughness',
-      0,
-      1,
-      0.1
-    );
-    f.add(
-      this.mainWire.material as MeshStandardMaterial,
-      'metalness',
-      0,
-      1,
-      0.1
-    );
-  }
-
   async buildMainWireSeparate() {
     return Promise.all(
       [...Array(150).keys()].map(async (idx) => {
@@ -567,92 +514,6 @@ export class Pillar {
         });
       })
     );
-  }
-  async buildCoreWire() {
-    // this.coreWire = await this.loadGtlfMesh('models/corealot-smooth.gtlf');
-    this.coreWire = await this.loadGtlfMesh(
-      'models/core-004-med-smooth-classname.gtlf'
-    );
-
-    // this.coreWire = await this.loadGtlfMesh('models/core-006-med-smooth-classname.gltf');
-    // this.coreWire = await this.loadGtlfMesh(
-    //   'models/core-007-med-smooth-packed.gltf'
-    // );
-
-    (this.coreWire.material as MeshStandardMaterial).roughness =
-      this.config.wire.core.roughness;
-    (this.coreWire.material as MeshStandardMaterial).metalness =
-      this.config.wire.core.metalness;
-    (this.coreWire.material as MeshStandardMaterial).color.setHex(
-      this.config.wire.core.color
-    );
-
-    this.scene.add(this.coreWire);
-    this.coreWire.geometry.setDrawRange(0, 0);
-
-    this.animations.push(() => {
-      this.coreWire.geometry.setDrawRange(
-        0,
-        Math.floor(this.coreWire.geometry.index?.count! * this.mouseProgressX)
-      );
-    });
-
-    const f = this.gui.addFolder('Core wire');
-    f.addColor(this.coreWire.material as MeshStandardMaterial, 'color');
-    f.add(
-      this.coreWire.material as MeshStandardMaterial,
-      'roughness',
-      0,
-      1,
-      0.1
-    );
-    f.add(
-      this.coreWire.material as MeshStandardMaterial,
-      'metalness',
-      0,
-      1,
-      0.1
-    );
-  }
-
-  async buildPole2() {
-    const textureLoader = new TextureLoader(this.loadingManager);
-
-    const normalMap2 = textureLoader.load('textures/Water_1_M_Normal.jpg');
-    normalMap2.wrapS = normalMap2.wrapT = RepeatWrapping;
-    normalMap2.repeat.set(2, 2);
-
-    const clearcoatNormalMap = textureLoader.load(
-      'textures/Scratched_gold_01_1K_Normal.png'
-    );
-    clearcoatNormalMap.wrapS = clearcoatNormalMap.wrapT = RepeatWrapping;
-    clearcoatNormalMap.repeat.set(2, 2);
-
-    const material = new MeshPhysicalMaterial({
-      clearcoat: 0.1,
-      metalness: 0,
-      roughness: 0.7,
-      color: new Color(0x898989),
-      normalMap: normalMap2,
-      normalScale: new Vector2(1, 1),
-      clearcoatNormalMap: clearcoatNormalMap,
-      clearcoatNormalScale: new Vector2(2.0, -2.0),
-      //   toneMapped: false,
-    });
-
-    this.pole = await this.loadGtlfMesh('models/thepole-005red.gltf');
-
-    this.pole.material = material;
-    this.pole.material.needsUpdate = true;
-    this.scene.add(this.pole);
-
-    const f = this.gui.addFolder('Pole');
-    f.addColor(this.pole.material as MeshPhysicalMaterial, 'color');
-    f.add(this.pole.material as MeshPhysicalMaterial, 'roughness', 0, 1, 0.1);
-    f.add(this.pole.material as MeshPhysicalMaterial, 'metalness', 0, 1, 0.1);
-    f.add(this.pole.material as MeshPhysicalMaterial, 'clearcoat', 0, 1, 0.1);
-
-    return;
   }
 
   async buildPole() {
