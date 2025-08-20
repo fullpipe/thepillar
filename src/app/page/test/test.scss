@@ -1,0 +1,11 @@
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2em;
+  height: 100vh;
+
+  button {
+    padding: 2em;
+  }
+}

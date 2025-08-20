@@ -41,10 +41,14 @@ canvas {
     }
   }
 
-  .roll {
-    cursor: pointer;
-    background: none;
-    border: none;
+  .actions {
+    display: flex;
+
+    button {
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
   }
 
   .gains {

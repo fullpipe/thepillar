@@ -28,7 +28,7 @@ export class Sound {
   audioCtx!: AudioContext;
   analyser!: AnalyserNode;
   bufferLength: number;
-  dataArray: Uint8Array;
+  dataArray: Uint8Array<ArrayBuffer>;
 
   constructor() {
     this.audioCtx = new AudioContext();
@@ -50,6 +50,7 @@ export class Sound {
       audio: true,
       video: false,
     });
+
     const micSource = this.audioCtx.createMediaStreamSource(this.mic);
     this.micSource = micSource;
   }
@@ -113,30 +114,6 @@ export class Sound {
     if (this.micSource) {
       this.micSource.disconnect();
     }
-  }
-
-  async play(source: SoundSource) {
-    this.stopAll();
-    switch (source) {
-      case SoundSource.Music:
-        await this.initMusic();
-        this.musicSource.connect(this.analyser);
-        this.musicSource.connect(this.audioCtx.destination);
-        this.music.play();
-        break;
-      case SoundSource.Radio:
-        await this.initRadio();
-        this.radioSource.connect(this.analyser);
-        this.radioSource.connect(this.audioCtx.destination);
-        this.radio.play();
-        break;
-      case SoundSource.Mic:
-        await this.initMic();
-        this.micSource.connect(this.analyser);
-        break;
-    }
-
-    this.analize = true;
   }
 
   async loadTrack(path: string): Promise<HTMLAudioElement> {

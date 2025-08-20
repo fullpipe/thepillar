@@ -36,7 +36,7 @@
       </tr>
       }
 
-      <tr>
+      <!-- <tr>
         <td>
           <ng-icon name="heroMicrophone" />
         </td>
@@ -49,7 +49,7 @@
             [(ngModel)]="micGain"
           />
         </td>
-      </tr>
+      </tr> -->
       <tr>
         <td>
           <ng-icon name="heroRadio" />
@@ -67,11 +67,14 @@
     </table>
   </div>
 
-  <button class="roll" (click)="roll()">
-    <ng-icon name="heroArrowPathRoundedSquare" />
-  </button>
+  <div class="actions">
+    <button (click)="roll()">
+      <ng-icon name="heroArrowPathRoundedSquare" />
+    </button>
 
-  <!-- <ng-icon name="heroSpeakerXMark" />
-  <ng-icon name="heroArrowsPointingOut" /> -->
+    <button (click)="mute()">
+      <ng-icon name="heroSpeakerXMark" />
+    </button>
+  </div>
 </div>
 }

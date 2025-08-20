@@ -3,6 +3,7 @@ import { Index } from './page/index';
 import { Color } from './page/color/color';
 import { Thepillar } from './page/thepillar/thepillar';
 import { Thepillar3d } from './page/thepillar3d/thepillar3d';
+import { Test } from './page/test/test';
 
 export const routes: Routes = [
   {
@@ -14,20 +15,25 @@ export const routes: Routes = [
     title: 'The Pillar Radio by Pterodactyl Supplies',
   },
   {
-    path: 'color',
-    component: Color,
+    path: 'test',
+    component: Test,
     title: 'Alexandra Fiodorova likes blue',
   },
-  {
-    path: 'index',
-    component: Index,
-    title: 'Alexandra Fiodorova',
-  },
-  {
-    path: 'thepillar',
-    component: Thepillar,
-    title: 'The Pillar Radio by Pterodactyl Supplies',
-  },
+  // {
+  //   path: 'color',
+  //   component: Color,
+  //   title: 'Alexandra Fiodorova likes blue',
+  // },
+  // {
+  //   path: 'index',
+  //   component: Index,
+  //   title: 'Alexandra Fiodorova',
+  // },
+  // {
+  //   path: 'thepillar',
+  //   component: Thepillar,
+  //   title: 'The Pillar Radio by Pterodactyl Supplies',
+  // },
   {
     path: '**',
     redirectTo: '',

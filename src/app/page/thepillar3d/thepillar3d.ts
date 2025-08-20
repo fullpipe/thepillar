@@ -19,7 +19,7 @@ import {
   heroSpeakerWave,
   heroSpeakerXMark,
 } from '@ng-icons/heroicons/outline';
-import { Sound, SoundSource } from './pillar/sound';
+import { Sound } from './pillar/sound';
 import { FormsModule } from '@angular/forms';
 import {
   debounceTime,
@@ -95,12 +95,13 @@ export class Thepillar3d {
 
     effect(() => {
       const g = this.micGain();
-      if (!this.sound) {
+      if (!this.sound || !this.sound.mic) {
         return;
       }
 
       this.sound.mixer.setGain('mic', g / 100);
     });
+
     effect(() => {
       const g = this.radioGain();
       if (!this.sound) {
@@ -132,11 +133,15 @@ export class Thepillar3d {
 
     this.prerunning.set(false);
     this.running.set(true);
+    this.micGain.set(100);
   }
 
   async roll() {
-    this.radioGain.set(50);
-    this.micGain.set(50);
+    let rolls = 0;
+    // if (Math.random() < 0.7) {
+    //   this.radioGain.set(Math.random() * 100);
+    //   rolls++;
+    // }
 
     this.gains.forEach((gain) => {
       if (Math.random() < 0.7) {
@@ -144,7 +149,19 @@ export class Thepillar3d {
         return;
       }
 
+      rolls++;
       gain.set(Math.random() * 100);
+    });
+
+    if (rolls == 0) {
+      this.roll();
+    }
+  }
+
+  async mute() {
+    this.radioGain.set(0);
+    this.gains.forEach((gain) => {
+      gain.set(0);
     });
   }
 }
