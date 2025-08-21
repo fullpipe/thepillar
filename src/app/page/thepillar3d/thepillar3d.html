@@ -12,7 +12,7 @@
     <ng-icon name="heroEllipsisHorizontal" />
   </div>
   } @else {
-  <button class="play" (click)="run()">
+  <button class="play shake-horizontal" (click)="run()">
     <ng-icon name="heroPlay" />
   </button>
   } }
@@ -36,20 +36,6 @@
       </tr>
       }
 
-      <!-- <tr>
-        <td>
-          <ng-icon name="heroMicrophone" />
-        </td>
-        <td>
-          <input
-            type="range"
-            [name]="'mic-gain'"
-            min="0"
-            max="100"
-            [(ngModel)]="micGain"
-          />
-        </td>
-      </tr> -->
       <tr>
         <td>
           <ng-icon name="heroRadio" />
@@ -64,16 +50,28 @@
           />
         </td>
       </tr>
+
+      <tr>
+        <td colspan="2">
+          <div class="toggles">
+            @if (micAvailable()) {
+            <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
+              <ng-icon name="heroMicrophone" />
+            </button>
+            }
+
+            <button (click)="mute()">
+              <ng-icon name="heroSpeakerXMark" />
+            </button>
+          </div>
+        </td>
+      </tr>
     </table>
   </div>
 
   <div class="actions">
     <button (click)="roll()">
       <ng-icon name="heroArrowPathRoundedSquare" />
-    </button>
-
-    <button (click)="mute()">
-      <ng-icon name="heroSpeakerXMark" />
     </button>
   </div>
 </div>

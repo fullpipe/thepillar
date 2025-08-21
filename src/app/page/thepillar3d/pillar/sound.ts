@@ -229,7 +229,7 @@ class Mixer {
   }
 
   setGain(name: string | number, gain: number) {
-    this.inputs[name].gain.setValueAtTime(gain, this.ctx.currentTime);
+    this.inputs[name].gain.setTargetAtTime(gain, this.ctx.currentTime, 0.5);
   }
 
   add(name: string | number, source: AudioNode, silent?: boolean) {

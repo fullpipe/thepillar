@@ -33,6 +33,8 @@ import {
 } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 
+const MicGainMultiplier = 1.5;
+
 @Component({
   selector: 'app-thepillar3d',
   imports: [NgIcon, FormsModule, AsyncPipe],
@@ -56,6 +58,7 @@ export class Thepillar3d {
   canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('pillarCanvas');
   pillar!: Pillar;
   sound!: Sound;
+
   loading = signal(true);
   loadProgress = signal(0);
   prerunning = signal(false);
@@ -73,6 +76,8 @@ export class Thepillar3d {
   );
 
   gains: WritableSignal<number>[] = [];
+  micAvailable = signal(false);
+  micOn = signal(false);
   micGain = signal(0);
   radioGain = signal(0);
 
@@ -99,7 +104,24 @@ export class Thepillar3d {
         return;
       }
 
-      this.sound.mixer.setGain('mic', g / 100);
+      this.sound.mixer.setGain('mic', (g / 100) * MicGainMultiplier);
+    });
+
+    effect(() => {
+      const micOn = this.micOn();
+      const micAvailable = this.micAvailable();
+
+      if (!micAvailable) {
+        return;
+      }
+
+      console.log(micOn, micAvailable);
+
+      if (micOn) {
+        this.sound.mixer.setGain('mic', MicGainMultiplier);
+      } else {
+        this.sound.mixer.setGain('mic', 0);
+      }
     });
 
     effect(() => {
@@ -133,7 +155,11 @@ export class Thepillar3d {
 
     this.prerunning.set(false);
     this.running.set(true);
-    this.micGain.set(100);
+
+    if (this.sound.mic) {
+      this.micAvailable.set(true);
+      this.micOn.set(true);
+    }
   }
 
   async roll() {
