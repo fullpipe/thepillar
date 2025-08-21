@@ -227,10 +227,11 @@ export class Pillar {
     document.addEventListener('mousemove', (e) => {
       this.mouseProgress = e.clientX / window.innerWidth;
 
-      // this.mouseProgressX = e.clientX / window.innerWidth;
-      // this.mouseProgressY = e.clientY / window.innerHeight;
-      this.mouseProgressX = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
-      this.mouseProgressY = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
+      this.mouseProgressX = e.clientX / window.innerWidth;
+      this.mouseProgressY = 1 - e.clientY / window.innerHeight;
+
+      // this.mouseProgressX = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
+      // this.mouseProgressY = Math.abs(e.clientX / window.innerWidth - 0.5) * 2;
       // this.mouseProgressY = Math.abs(e.clientY / window.innerHeight - 0.5) * 2;
     });
   }
