@@ -32,12 +32,13 @@ import {
   tap,
 } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 const MicGainMultiplier = 1.5;
 
 @Component({
   selector: 'app-thepillar3d',
-  imports: [NgIcon, FormsModule, AsyncPipe],
+  imports: [NgIcon, FormsModule, AsyncPipe, NgxSliderModule],
   templateUrl: './thepillar3d.html',
   styleUrl: './thepillar3d.scss',
   viewProviders: [

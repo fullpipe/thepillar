@@ -59,71 +59,75 @@ button {
     }
     transition: opacity 0.2s ease-out;
 
+    .gain {
+      width: 100px;
+      position: relative;
+      ng-icon {
+        position: absolute;
+        left: -1.2em;
+        top: 25%;
+      }
+    }
+
     --color-track: #ffffff;
     --color-progress: #000000;
     --color-thumb: #ff0000;
 
-    input[type="range"] {
-      border: 0;
-      padding: 0;
-    }
+    ::ng-deep {
+      ngx-slider {
+        margin: 15px 0 15px;
+        .ngx-slider-bar {
+          background: var(--color-track);
+        }
 
-    /*Chrome*/
-    @media screen and (-webkit-min-device-pixel-ratio: 0) {
-      input[type="range"] {
-        overflow: hidden;
-        width: 100px;
-        -webkit-appearance: none;
-        background-color: var(--color-track);
-      }
+        .ngx-slider-selection-bar {
+          visibility: visible !important;
+        }
 
-      input[type="range"]::-webkit-slider-runnable-track {
-        height: 15px;
-        -webkit-appearance: none;
-        color: var(--color-progress);
-        margin-top: -1px;
-      }
+        .ngx-slider-selection {
+          background: var(--color-progress);
+        }
 
-      input[type="range"]::-webkit-slider-thumb {
-        width: 20px;
-        -webkit-appearance: none;
-        height: 20px;
-        cursor: ew-resize;
-        background: var(--color-thumb);
-        box-shadow: -80px 0 0 80px var(--color-progress);
-      }
-    }
-    /** FF*/
-    input[type="range"]::-moz-range-progress {
-      background-color: var(--color-progress);
-    }
-    input[type="range"]::-moz-range-track {
-      background-color: var(--color-track);
-    }
-    /* IE*/
-    input[type="range"]::-ms-fill-lower {
-      background-color: var(--color-progress);
-    }
-    input[type="range"]::-ms-fill-upper {
-      background-color: var(--color-track);
-    }
+        .ngx-slider-pointer {
+          width: 24px;
+          height: 24px;
+          top: -10px;
 
-    .toggles {
-      display: flex;
-      width: 100%;
-      justify-content: center;
-      align-items: center;
+          background: var(--color-thumb);
+          &::after {
+            top: 8px;
+            left: 8px;
+            background: var(--color-progress);
+          }
 
-      .inactive {
-        opacity: 0.62;
-      }
-      ng-icon {
-        &.is_active {
+          &:hover {
+            &::after {
+              background: var(--color-track);
+            }
+          }
+        }
+
+        .ngx-slider-bubble {
+          display: none;
         }
       }
     }
   }
 
+  .toggles {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+
+    .inactive {
+      opacity: 0.62;
+    }
+    ng-icon {
+      &.is_active {
+      }
+    }
+  }
   &.is_active {
     opacity: 1;
 

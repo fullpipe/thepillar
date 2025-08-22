@@ -20,53 +20,32 @@
 } @if (running()) {
 <div class="switch" [class.is_active]="isActive$ | async">
   <div class="gains">
-    <table>
-      @for (gain of gains; track $index; let idx = $index) {
-      <tr>
-        <td></td>
-        <td>
-          <input
-            type="range"
-            [name]="'gain' + idx"
-            min="0"
-            max="100"
-            [(ngModel)]="gain"
-          />
-        </td>
-      </tr>
-      }
+    @for (gain of gains; track $index; let idx = $index) {
+    <div class="gain">
+      <ngx-slider
+        [(value)]="gain"
+        [options]="{ floor: 0, ceil: 100, step: 1 }"
+      ></ngx-slider>
+    </div>
+    }
+    <div class="gain">
+      <ng-icon name="heroRadio" />
+      <ngx-slider
+        [(value)]="radioGain"
+        [options]="{ floor: 0, ceil: 100, step: 1 }"
+      ></ngx-slider>
+    </div>
+  </div>
+  <div class="toggles">
+    @if (micAvailable()) {
+    <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
+      <ng-icon name="heroMicrophone" />
+    </button>
+    }
 
-      <tr>
-        <td>
-          <ng-icon name="heroRadio" />
-        </td>
-        <td>
-          <input
-            type="range"
-            [name]="'radio-gain'"
-            min="0"
-            max="100"
-            [(ngModel)]="radioGain"
-          />
-        </td>
-      </tr>
-
-      <tr>
-        <td colspan="2">
-          <div class="toggles">
-            @if (micAvailable()) {
-            <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
-              <ng-icon name="heroMicrophone" />
-            </button>
-            }
-
-            <button (click)="mute()">
-              <ng-icon name="heroSpeakerXMark" />
-            </button>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <button (click)="mute()">
+      <ng-icon name="heroSpeakerXMark" />
+    </button>
   </div>
 
   <div class="actions">
