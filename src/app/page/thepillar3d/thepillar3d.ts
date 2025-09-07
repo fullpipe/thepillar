@@ -83,7 +83,7 @@ export class Thepillar3d {
   radioGain = signal(0);
 
   constructor() {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const gain = signal(0);
       const idx = i;
 

@@ -126,6 +126,17 @@ export class Sound {
       })
     );
 
+    this.tracks.push(await this.loadTrack('/test-mp3/10hz.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/50hz.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/50to5000hz-linScale.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/50to5000hz-logScale.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/100hz.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/500hz.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/1000hz.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/brown-10dB.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/pink-10dB.mp3'));
+    this.tracks.push(await this.loadTrack('/test-mp3/whiteGauss-10dB.mp3'));
+
     this.tracks.forEach((track, i) => {
       const source = this.audioCtx.createMediaElementSource(track.audio);
       mixer.add(i, source);
@@ -154,8 +165,20 @@ export class Sound {
       }
 
       this.analyser.getByteFrequencyData(this.dataArray);
+      this.analyser.getFloatFrequencyData(this.progressSeparate);
+
+      console.log(this.progressSeparate);
+      // for (let i = 0; i < this.dataArray.length; i++) {
+      //   this.progressSeparate[i] = progressCalc(this.dataArray[i]);
+      // }
+
+      const minDB = 128;
       for (let i = 0; i < this.dataArray.length; i++) {
-        this.progressSeparate[i] = progressCalc(this.dataArray[i]);
+        this.progressSeparate[i] = this.progressSeparate[i] + minDB;
+        if (this.progressSeparate[i] < 0) {
+          this.progressSeparate[i] = 0;
+        }
+        this.progressSeparate[i] = this.progressSeparate[i] / minDB;
       }
 
       // const nonZero = dataArray.filter((a) => a > 0);

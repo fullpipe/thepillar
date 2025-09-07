@@ -456,21 +456,20 @@ export class Pillar {
         const randomDuration = (1 - randomStart) * (0.5 * Math.random());
         const speed = 1 / (1 - randomDuration);
 
-        // const progressIdx = 5 + (idx % 27);
-        // const progressIdx = this.choooseIdx();
+        const progressIdx = this.choooseIdx(idx);
 
         this.animations.push(() => {
-          // let progress = this.reactOnSound
-          //   ? this.sound.progressSeparate[progressIdx]
-          //   : this.mouseProgressY;
-
           let progress = this.reactOnSound
-            ? this.soundProgress
+            ? this.sound.progressSeparate[progressIdx]
             : this.mouseProgressY;
 
-          progress -= randomStart;
-          progress *= speed;
-          progress = Math.max(progress, 0);
+          // let progress = this.reactOnSound
+          //   ? this.soundProgress
+          //   : this.mouseProgressY;
+
+          // progress -= randomStart;
+          // progress *= speed;
+          // progress = Math.max(progress, 0);
 
           wire.geometry.setDrawRange(
             0,
@@ -481,14 +480,14 @@ export class Pillar {
     );
   }
 
-  choooseIdx(): number {
+  choooseIdx(idx: number): number {
     const x = Math.random() * 42;
 
     if (Math.pow(x, 2) / (42 * 42) > Math.random()) {
       return Math.round(x);
     }
 
-    return this.choooseIdx();
+    return this.choooseIdx(idx);
   }
 
   async buildCoreWireSeparate() {

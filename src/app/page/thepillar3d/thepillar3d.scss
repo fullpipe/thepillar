@@ -60,13 +60,16 @@ button {
     transition: opacity 0.2s ease-out;
 
     .gain {
-      width: 100px;
+      width: 250px;
       position: relative;
 
       span {
         color: #fff;
-        font-size: smaller;
+        font-size: 10px;
+        margin-bottom: -5px;
+        display: block;
       }
+
       ng-icon {
         position: absolute;
         left: -1.2em;
