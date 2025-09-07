@@ -72,7 +72,6 @@ export class Pillar {
   soundProgress = 0.0;
 
   sound!: Sound;
-  soundSource = signal(SoundSource.Music);
   reactOnSound = false;
 
   config = {
@@ -457,7 +456,14 @@ export class Pillar {
         const randomDuration = (1 - randomStart) * (0.5 * Math.random());
         const speed = 1 / (1 - randomDuration);
 
+        // const progressIdx = 5 + (idx % 27);
+        // const progressIdx = this.choooseIdx();
+
         this.animations.push(() => {
+          // let progress = this.reactOnSound
+          //   ? this.sound.progressSeparate[progressIdx]
+          //   : this.mouseProgressY;
+
           let progress = this.reactOnSound
             ? this.soundProgress
             : this.mouseProgressY;
@@ -473,6 +479,16 @@ export class Pillar {
         });
       })
     );
+  }
+
+  choooseIdx(): number {
+    const x = Math.random() * 42;
+
+    if (Math.pow(x, 2) / (42 * 42) > Math.random()) {
+      return Math.round(x);
+    }
+
+    return this.choooseIdx();
   }
 
   async buildCoreWireSeparate() {

@@ -22,6 +22,7 @@
   <div class="gains">
     @for (gain of gains; track $index; let idx = $index) {
     <div class="gain">
+      <span>{{ sound.tracks[idx].name }}</span>
       <ngx-slider
         [(value)]="gain"
         [options]="{ floor: 0, ceil: 100, step: 1 }"

@@ -15,6 +15,7 @@ export class Sound {
   micSource!: MediaStreamAudioSourceNode;
 
   progress = 0;
+  progressSeparate!: Float32Array<ArrayBuffer>;
   analize = false;
 
   mixer!: Mixer;
@@ -27,19 +28,10 @@ export class Sound {
 
   audioCtx!: AudioContext;
   analyser!: AnalyserNode;
-  bufferLength: number;
-  dataArray: Uint8Array<ArrayBuffer>;
+  bufferLength!: number;
+  dataArray!: Uint8Array<ArrayBuffer>;
 
-  constructor() {
-    this.audioCtx = new AudioContext();
-    this.analyser = this.audioCtx.createAnalyser();
-    this.analyser.smoothingTimeConstant = 0.8;
-    this.analyser.minDecibels = -85;
-    this.analyser.maxDecibels = -30;
-    this.analyser.fftSize = 256;
-    this.bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Uint8Array(this.bufferLength);
-  }
+  constructor() {}
 
   async initMic() {
     if (this.mic) {
@@ -72,36 +64,6 @@ export class Sound {
     };
   }
 
-  async initMusic() {
-    if (this.music) {
-      return;
-    }
-
-    const idx = Math.ceil(Math.random() * 19);
-    const music = new Audio(`/ogg-lofi/${idx}-lo.ogg`);
-    this.music = music;
-    this.music.crossOrigin = 'anonymous';
-    this.music.autoplay = false;
-    this.music.preload = 'auto';
-    this.music.loop = true;
-
-    const musicSource = this.audioCtx.createMediaElementSource(this.music);
-    this.musicSource = musicSource;
-
-    // const canplay = new Promise<void>((resolve, reject) => {
-    //   music.addEventListener('canplay', () => {
-    //     resolve();
-    //   });
-    //   music.addEventListener('error', () => {
-    //     reject();
-    //   });
-    // });
-
-    // this.music.load();
-
-    return;
-  }
-
   stopAll() {
     if (this.radioSource) {
       this.radio.pause();
@@ -116,15 +78,23 @@ export class Sound {
     }
   }
 
-  async loadTrack(path: string): Promise<HTMLAudioElement> {
+  async loadTrack(path: string): Promise<Track> {
     const track = new Audio();
     track.crossOrigin = 'anonymous';
     track.autoplay = false;
     track.preload = 'auto';
     track.loop = true;
 
-    const canplaythrough = new Promise<HTMLAudioElement>((resolve, reject) => {
-      track.addEventListener('canplaythrough', () => resolve(track), false);
+    const canplaythrough = new Promise<Track>((resolve, reject) => {
+      track.addEventListener(
+        'canplaythrough',
+        () =>
+          resolve({
+            name: path,
+            audio: track,
+          }),
+        false
+      );
     });
 
     track.src = path;
@@ -132,6 +102,8 @@ export class Sound {
 
     return canplaythrough;
   }
+
+  tracks: Track[] = [];
 
   async init() {
     this.audioCtx = new AudioContext();
@@ -142,22 +114,23 @@ export class Sound {
     this.analyser.fftSize = 256;
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Uint8Array(this.bufferLength);
+    this.progressSeparate = new Float32Array(this.bufferLength);
 
     const mixer = new Mixer(this.audioCtx);
     this.mixer = mixer;
 
-    const tracks = await Promise.all(
+    this.tracks = await Promise.all(
       [...Array(10).keys()].map(() => {
         const idx = Math.ceil(Math.random() * 19);
         return this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
       })
     );
 
-    tracks.forEach((track, i) => {
-      const source = this.audioCtx.createMediaElementSource(track);
+    this.tracks.forEach((track, i) => {
+      const source = this.audioCtx.createMediaElementSource(track.audio);
       mixer.add(i, source);
 
-      track.play();
+      track.audio.play();
     });
 
     await this.initRadio();
@@ -181,8 +154,9 @@ export class Sound {
       }
 
       this.analyser.getByteFrequencyData(this.dataArray);
-      // console.log(dataArray);
-      // console.log(dataArray.reduce((a, b) => a + b / 256, 0));
+      for (let i = 0; i < this.dataArray.length; i++) {
+        this.progressSeparate[i] = progressCalc(this.dataArray[i]);
+      }
 
       // const nonZero = dataArray.filter((a) => a > 0);
       // let loudness = 0;
@@ -194,8 +168,7 @@ export class Sound {
 
       // @see https://fullpipe.github.io/progress/?graph=KCd4IVsxLDI1NiwxXX5mdW5jcyFbKCdyYXchJygoQSkpICogLS8gey0rIDcoKFMpKTR9J35wYXJhbXMhKCdBITEwNX5MITJ-UyEzMil-bGFiZWwhJ1NpZ21vaWQnKV0pLTd4NCA0LCAoKEwpKX03TWF0aC5wb3d7ATc0LV8
       const x = this.dataArray.reduce((a, b) => a + b, 0) / this.bufferLength;
-      const loudness =
-        (105 * Math.pow(x, 2)) / (Math.pow(x, 2) + Math.pow(32, 2)) / 100;
+      const loudness = progressCalc(x);
 
       this.progress = loudness;
 
@@ -255,3 +228,14 @@ class Mixer {
     this.analizerOutput.connect(destination);
   }
 }
+
+function progressCalc(x: number): number {
+  let y = (105 * Math.pow(x, 2)) / (Math.pow(x, 2) + Math.pow(32, 2)) / 100;
+  // return Math.round(y * 100) / 100;
+  return y;
+}
+
+type Track = {
+  name: string;
+  audio: HTMLAudioElement;
+};
