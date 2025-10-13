@@ -153,8 +153,14 @@ export class Pillar {
     return Promise.all([
       this.buildBG(),
       this.buildLight(),
-      this.buildCoreWireSeparate(),
-      this.buildMainWireSeparate(),
+
+      // this.buildCoreWireSeparate(),
+      // this.buildMainWireSeparate(),
+
+      this.buildCoreWireSeparate2(),
+      this.buildMassWireSeparate2(),
+      this.buildWrapWireSeparate2(),
+
       this.buildPole(),
       this.buildGrid(),
       this.buildStatsAndClock(),
@@ -522,6 +528,134 @@ export class Pillar {
           progress -= randomStart;
           progress *= speed;
           progress = Math.max(progress, 0);
+
+          wire.geometry.setDrawRange(
+            0,
+            Math.floor(wire.geometry.index?.count! * progress)
+          );
+        });
+      })
+    );
+  }
+  async buildCoreWireSeparate2() {
+    return Promise.all(
+      [...Array(13).keys()].map(async (idx) => {
+        const wire = await this.loadGtlfMesh(
+          `models/core-long-separate-003/core-long_${idx}.glb`
+        );
+
+        const material = new MeshStandardMaterial({
+          roughness: this.config.wire.core.roughness,
+          metalness: this.config.wire.core.metalness,
+          color: this.config.wire.core.color,
+        });
+        wire.material = material;
+
+        this.scene.add(wire);
+        wire.geometry.setDrawRange(0, 0);
+
+        const randomStart = 0.1 * Math.random();
+        const randomDuration = (1 - randomStart) * (0.1 * Math.random());
+        const speed = 1 / (1 - randomDuration);
+
+        this.animations.push(() => {
+          let progress = this.reactOnSound
+            ? this.soundProgress
+            : this.mouseProgressX;
+
+          progress -= randomStart;
+          progress *= speed;
+          progress = Math.max(progress, 0);
+
+          wire.geometry.setDrawRange(
+            0,
+            Math.floor(wire.geometry.index?.count! * progress)
+          );
+        });
+      })
+    );
+  }
+
+  async buildMassWireSeparate2() {
+    return Promise.all(
+      [...Array(39).keys()].map(async (idx) => {
+        const wire = await this.loadGtlfMesh(
+          `models/mass-long-separate-003/mass-long_${idx}.glb`
+        );
+
+        const material = new MeshStandardMaterial({
+          roughness: this.config.wire.core.roughness,
+          metalness: this.config.wire.core.metalness,
+          color: this.config.wire.core.color,
+        });
+        wire.material = material;
+
+        this.scene.add(wire);
+        wire.geometry.setDrawRange(0, 0);
+
+        const randomStart = 0.1 * Math.random();
+        const randomDuration = (1 - randomStart) * (0.1 * Math.random());
+        const speed = 1 / (1 - randomDuration);
+
+        const progressIdx = idx;
+
+        this.animations.push(() => {
+          let progress = this.reactOnSound
+            ? this.sound.progressSeparate[progressIdx]
+            : this.mouseProgressY;
+
+          // let progress = this.reactOnSound
+          //   ? this.soundProgress
+          //   : this.mouseProgressX;
+
+          // progress -= randomStart;
+          // progress *= speed;
+          // progress = Math.max(progress, 0);
+
+          wire.geometry.setDrawRange(
+            0,
+            Math.floor(wire.geometry.index?.count! * progress)
+          );
+        });
+      })
+    );
+  }
+
+  async buildWrapWireSeparate2() {
+    return Promise.all(
+      [...Array(104).keys()].map(async (idx) => {
+        const wire = await this.loadGtlfMesh(
+          `models/wrap-separate-003/wrap_${idx}.glb`
+        );
+
+        const material = new MeshStandardMaterial({
+          roughness: this.config.wire.main.roughness,
+          metalness: this.config.wire.main.metalness,
+          color: this.config.wire.main.color,
+        });
+        wire.material = material;
+
+        this.scene.add(wire);
+        wire.geometry.setDrawRange(0, 0);
+
+        const randomStart = 0.2 + 0.4 * Math.random();
+        const randomDuration = (1 - randomStart) * (0.5 * Math.random());
+        const speed = 1 / (1 - randomDuration);
+
+        const progressIdx = this.choooseIdx(idx);
+
+        this.animations.push(() => {
+          let progress = this.reactOnSound
+            ? this.sound.progressSeparate[progressIdx]
+            : this.mouseProgressY;
+
+          // let progress = this.reactOnSound
+          //   ? this.soundProgress
+          //   : this.mouseProgressY;
+
+          // progress -= randomStart;
+          // progress *= speed;
+          // progress = Math.max(progress, 0);
 
           wire.geometry.setDrawRange(
             0,

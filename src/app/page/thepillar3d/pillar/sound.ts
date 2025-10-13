@@ -167,12 +167,11 @@ export class Sound {
       this.analyser.getByteFrequencyData(this.dataArray);
       this.analyser.getFloatFrequencyData(this.progressSeparate);
 
-      console.log(this.progressSeparate);
       // for (let i = 0; i < this.dataArray.length; i++) {
       //   this.progressSeparate[i] = progressCalc(this.dataArray[i]);
       // }
 
-      const minDB = 128;
+      const minDB = 64;
       for (let i = 0; i < this.dataArray.length; i++) {
         this.progressSeparate[i] = this.progressSeparate[i] + minDB;
         if (this.progressSeparate[i] < 0) {
@@ -180,6 +179,7 @@ export class Sound {
         }
         this.progressSeparate[i] = this.progressSeparate[i] / minDB;
       }
+      // console.log(this.progressSeparate);
 
       // const nonZero = dataArray.filter((a) => a > 0);
       // let loudness = 0;
@@ -189,7 +189,6 @@ export class Sound {
 
       // const loudness = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
 
-      // @see https://fullpipe.github.io/progress/?graph=KCd4IVsxLDI1NiwxXX5mdW5jcyFbKCdyYXchJygoQSkpICogLS8gey0rIDcoKFMpKTR9J35wYXJhbXMhKCdBITEwNX5MITJ-UyEzMil-bGFiZWwhJ1NpZ21vaWQnKV0pLTd4NCA0LCAoKEwpKX03TWF0aC5wb3d7ATc0LV8
       const x = this.dataArray.reduce((a, b) => a + b, 0) / this.bufferLength;
       const loudness = progressCalc(x);
 
@@ -225,6 +224,10 @@ class Mixer {
   }
 
   setGain(name: string | number, gain: number) {
+    if (!this.inputs[name]) {
+      return;
+    }
+
     this.inputs[name].gain.setTargetAtTime(gain, this.ctx.currentTime, 0.2);
   }
 
@@ -253,6 +256,7 @@ class Mixer {
 }
 
 function progressCalc(x: number): number {
+  // @see https://fullpipe.github.io/progress/?graph=KCd4IVsxLDI1NiwxXX5mdW5jcyFbKCdyYXchJygoQSkpICogLS8gey0rIDcoKFMpKTR9J35wYXJhbXMhKCdBITEwNX5MITJ-UyEzMil-bGFiZWwhJ1NpZ21vaWQnKV0pLTd4NCA0LCAoKEwpKX03TWF0aC5wb3d7ATc0LV8
   let y = (105 * Math.pow(x, 2)) / (Math.pow(x, 2) + Math.pow(32, 2)) / 100;
   // return Math.round(y * 100) / 100;
   return y;

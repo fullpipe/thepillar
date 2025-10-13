@@ -137,7 +137,9 @@ export class Thepillar3d {
 
   async ngOnInit() {
     this.pillar = new Pillar(this.canvas().nativeElement);
+
     await this.pillar.init((p) => this.loadProgress.set(p));
+
     this.loading.set(false);
     this.pillar.draw(0);
   }
