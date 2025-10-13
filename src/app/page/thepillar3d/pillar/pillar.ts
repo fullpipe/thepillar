@@ -537,6 +537,7 @@ export class Pillar {
       })
     );
   }
+
   async buildCoreWireSeparate2() {
     return Promise.all(
       [...Array(13).keys()].map(async (idx) => {
@@ -602,7 +603,7 @@ export class Pillar {
         this.animations.push(() => {
           let progress = this.reactOnSound
             ? this.sound.progressSeparate[progressIdx]
-            : this.mouseProgressY;
+            : 1 - this.mouseProgressX;
 
           // let progress = this.reactOnSound
           //   ? this.soundProgress
