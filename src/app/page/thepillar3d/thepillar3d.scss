@@ -54,26 +54,36 @@ button {
   .gains {
     display: flex;
     flex-direction: column;
+    gap: 0.5em;
     @media screen and (max-width: 767px) {
       opacity: 0.2;
     }
     transition: opacity 0.2s ease-out;
 
     .gain {
-      width: 250px;
+      // width: 250px;
       position: relative;
+
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.67em;
 
       span {
         color: #fff;
         font-size: 10px;
-        margin-bottom: -5px;
+        // margin-bottom: -5px;
         display: block;
       }
 
+      ngx-slider {
+        width: 150px;
+      }
+
       ng-icon {
-        position: absolute;
-        left: -1.2em;
-        top: 25%;
+        // position: absolute;
+        // left: -1.2em;
+        // top: 25%;
       }
     }
 
@@ -116,13 +126,15 @@ button {
         }
 
         .ngx-slider-bubble {
-          display: none;
+          // display: none;
+          font-size: small;
+          color: #fff;
         }
       }
     }
   }
 
-  .toggles {
+  .mic_and_mute {
     display: flex;
     width: 100%;
     justify-content: center;
@@ -142,6 +154,11 @@ button {
     .gains {
       opacity: 1;
     }
+  }
+
+  &.left {
+    left: 0.67em;
+    right: auto;
   }
 }
 

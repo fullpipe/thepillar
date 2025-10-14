@@ -643,7 +643,7 @@ export class Pillar {
         const randomDuration = (1 - randomStart) * (0.5 * Math.random());
         const speed = 1 / (1 - randomDuration);
 
-        const progressIdx = this.choooseIdx(idx);
+        const progressIdx = idx % 42;
 
         this.animations.push(() => {
           let progress = this.reactOnSound

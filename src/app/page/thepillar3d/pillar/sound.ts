@@ -104,13 +104,15 @@ export class Sound {
   }
 
   tracks: Track[] = [];
+  minDBCut = 40;
 
   async init() {
     this.audioCtx = new AudioContext();
     this.analyser = this.audioCtx.createAnalyser();
-    this.analyser.smoothingTimeConstant = 0.8;
+    this.analyser.smoothingTimeConstant = 0.99;
     this.analyser.minDecibels = -85;
-    this.analyser.maxDecibels = -30;
+    this.analyser.maxDecibels = -40;
+
     this.analyser.fftSize = 256;
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Uint8Array(this.bufferLength);
@@ -171,13 +173,12 @@ export class Sound {
       //   this.progressSeparate[i] = progressCalc(this.dataArray[i]);
       // }
 
-      const minDB = 64;
-      for (let i = 0; i < this.dataArray.length; i++) {
-        this.progressSeparate[i] = this.progressSeparate[i] + minDB;
+      for (let i = 0; i < this.progressSeparate.length; i++) {
+        this.progressSeparate[i] = this.progressSeparate[i] + this.minDBCut;
         if (this.progressSeparate[i] < 0) {
           this.progressSeparate[i] = 0;
         }
-        this.progressSeparate[i] = this.progressSeparate[i] / minDB;
+        this.progressSeparate[i] = this.progressSeparate[i] / this.minDBCut;
       }
       // console.log(this.progressSeparate);
 

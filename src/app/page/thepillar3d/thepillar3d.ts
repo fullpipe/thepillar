@@ -82,6 +82,8 @@ export class Thepillar3d {
   micGain = signal(0);
   radioGain = signal(0);
 
+  micGainMultiplier = signal(1.5);
+
   constructor() {
     for (let i = 0; i < 20; i++) {
       const gain = signal(0);
@@ -101,25 +103,25 @@ export class Thepillar3d {
 
     effect(() => {
       const g = this.micGain();
+      const multiplier = this.micGainMultiplier();
       if (!this.sound || !this.sound.mic) {
         return;
       }
 
-      this.sound.mixer.setGain('mic', (g / 100) * MicGainMultiplier);
+      this.sound.mixer.setGain('mic', (g / 100) * multiplier);
     });
 
     effect(() => {
       const micOn = this.micOn();
       const micAvailable = this.micAvailable();
+      const multiplier = this.micGainMultiplier();
 
       if (!micAvailable) {
         return;
       }
 
-      console.log(micOn, micAvailable);
-
       if (micOn) {
-        this.sound.mixer.setGain('mic', MicGainMultiplier);
+        this.sound.mixer.setGain('mic', multiplier);
       } else {
         this.sound.mixer.setGain('mic', 0);
       }

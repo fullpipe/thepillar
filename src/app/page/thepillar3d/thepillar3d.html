@@ -37,7 +37,7 @@
       ></ngx-slider>
     </div>
   </div>
-  <div class="toggles">
+  <div class="mic_and_mute">
     @if (micAvailable()) {
     <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
       <ng-icon name="heroMicrophone" />
@@ -47,12 +47,43 @@
     <button (click)="mute()">
       <ng-icon name="heroSpeakerXMark" />
     </button>
-  </div>
 
-  <div class="actions">
     <button (click)="roll()">
       <ng-icon name="heroArrowPathRoundedSquare" />
     </button>
+  </div>
+</div>
+<div class="switch left">
+  <div class="gains">
+    <div class="gain">
+      <span>smoothingTimeConstant</span>
+      <ngx-slider
+        [(value)]="sound.analyser.smoothingTimeConstant"
+        [options]="{ floor: 0, ceil: 1, step: 0.01 }"
+      ></ngx-slider>
+    </div>
+    <div class="gain">
+      <span>minDecibels/maxDecibels</span>
+      <ngx-slider
+        [(value)]="sound.analyser.minDecibels"
+        [(highValue)]="sound.analyser.maxDecibels"
+        [options]="{ floor: -128, ceil: 0, step: 1 }"
+      ></ngx-slider>
+    </div>
+    <div class="gain">
+      <span>minDBCut</span>
+      <ngx-slider
+        [(value)]="sound.minDBCut"
+        [options]="{ floor: 0, ceil: 128, step: 1 }"
+      ></ngx-slider>
+    </div>
+    <div class="gain">
+      <span>micGainMultiplier</span>
+      <ngx-slider
+        [(value)]="micGainMultiplier"
+        [options]="{ floor: 0, ceil: 5, step: 0.1 }"
+      ></ngx-slider>
+    </div>
   </div>
 </div>
 }
