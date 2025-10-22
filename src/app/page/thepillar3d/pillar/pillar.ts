@@ -401,6 +401,7 @@ export class Pillar {
     const f = this.gui.addFolder('controls');
     f.add(this.config.animation, 'play');
 
+    this.gui.hide();
     this.gui.close();
   }
 

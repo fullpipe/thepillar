@@ -1,3 +1,5 @@
+import { shuffle } from './helpers/shuffle';
+
 export enum SoundSource {
   Music,
   Radio,
@@ -104,14 +106,14 @@ export class Sound {
   }
 
   tracks: Track[] = [];
-  minDBCut = 40;
+  minDBCut = 86;
 
   async init() {
     this.audioCtx = new AudioContext();
     this.analyser = this.audioCtx.createAnalyser();
-    this.analyser.smoothingTimeConstant = 0.99;
-    this.analyser.minDecibels = -85;
-    this.analyser.maxDecibels = -40;
+    this.analyser.smoothingTimeConstant = 0.97;
+    this.analyser.minDecibels = -75;
+    this.analyser.maxDecibels = -10;
 
     this.analyser.fftSize = 256;
     this.bufferLength = this.analyser.frequencyBinCount;
@@ -121,9 +123,10 @@ export class Sound {
     const mixer = new Mixer(this.audioCtx);
     this.mixer = mixer;
 
+    const ids = [...Array(19).keys()].map((i) => i + 1);
+    shuffle(ids);
     this.tracks = await Promise.all(
-      [...Array(10).keys()].map(() => {
-        const idx = Math.ceil(Math.random() * 19);
+      ids.map((idx) => {
         return this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
       })
     );
@@ -229,7 +232,7 @@ class Mixer {
       return;
     }
 
-    this.inputs[name].gain.setTargetAtTime(gain, this.ctx.currentTime, 0.2);
+    this.inputs[name].gain.setTargetAtTime(gain, this.ctx.currentTime, 0.01);
   }
 
   add(name: string | number, source: AudioNode, silent?: boolean) {

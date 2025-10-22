@@ -33,8 +33,7 @@ import {
 } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-
-const MicGainMultiplier = 1.5;
+import { shuffle } from './pillar/helpers/shuffle';
 
 @Component({
   selector: 'app-thepillar3d',
@@ -82,10 +81,8 @@ export class Thepillar3d {
   micGain = signal(0);
   radioGain = signal(0);
 
-  micGainMultiplier = signal(1.5);
-
   constructor() {
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 29; i++) {
       const gain = signal(0);
       const idx = i;
 
@@ -175,18 +172,14 @@ export class Thepillar3d {
     // }
 
     this.gains.forEach((gain) => {
-      if (Math.random() < 0.7) {
-        gain.set(0);
-        return;
-      }
-
-      rolls++;
-      gain.set(Math.random() * 100);
+      gain.set(0);
     });
 
-    if (rolls == 0) {
-      this.roll();
-    }
+    const ids = [...Array(19).keys()];
+    shuffle(ids);
+    ids.slice(0, 3).forEach((i) => {
+      this.gains[i].set(Math.random() * 100);
+    });
   }
 
   async mute() {
@@ -194,5 +187,15 @@ export class Thepillar3d {
     this.gains.forEach((gain) => {
       gain.set(0);
     });
+  }
+
+  micGainMultiplier = signal(0.5);
+
+  async resetTech() {
+    this.sound.analyser.smoothingTimeConstant = 0.97;
+    this.sound.analyser.minDecibels = -75;
+    this.sound.analyser.maxDecibels = -10;
+    this.sound.minDBCut = 86;
+    this.micGainMultiplier.set(0.5);
   }
 }

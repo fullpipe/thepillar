@@ -59,7 +59,7 @@
       <span>smoothingTimeConstant</span>
       <ngx-slider
         [(value)]="sound.analyser.smoothingTimeConstant"
-        [options]="{ floor: 0, ceil: 1, step: 0.01 }"
+        [options]="{ floor: 0, ceil: 0.99, step: 0.01 }"
       ></ngx-slider>
     </div>
     <div class="gain">
@@ -84,6 +84,11 @@
         [options]="{ floor: 0, ceil: 5, step: 0.1 }"
       ></ngx-slider>
     </div>
+  </div>
+  <div class="mic_and_mute">
+    <button (click)="resetTech()">
+      <ng-icon name="heroArrowPathRoundedSquare" />
+    </button>
   </div>
 </div>
 }
