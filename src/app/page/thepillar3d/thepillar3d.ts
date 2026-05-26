@@ -1,11 +1,4 @@
-import {
-  Component,
-  effect,
-  ElementRef,
-  signal,
-  viewChild,
-  WritableSignal,
-} from '@angular/core';
+import { Component, ElementRef, signal, viewChild } from '@angular/core';
 import { Pillar } from './pillar/pillar';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -21,23 +14,13 @@ import {
 } from '@ng-icons/heroicons/outline';
 import { Sound } from './pillar/sound';
 import { FormsModule } from '@angular/forms';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  fromEvent,
-  map,
-  merge,
-  of,
-  Subject,
-  tap,
-} from 'rxjs';
-import { AsyncPipe } from '@angular/common';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-import { shuffle } from './pillar/helpers/shuffle';
+import { InactiveWrap } from '../../component/inactive-wrap/inactive-wrap';
+import { Gains } from '../../component/gains/gains';
 
 @Component({
   selector: 'app-thepillar3d',
-  imports: [NgIcon, FormsModule, AsyncPipe, NgxSliderModule],
+  imports: [NgIcon, FormsModule, NgxSliderModule, InactiveWrap, Gains],
   templateUrl: './thepillar3d.html',
   styleUrl: './thepillar3d.scss',
   viewProviders: [
@@ -64,75 +47,7 @@ export class Thepillar3d {
   prerunning = signal(false);
   running = signal(false);
 
-  private reset$ = new Subject<boolean>();
-  public readonly isActive$ = merge(
-    fromEvent(document, 'mousemove').pipe(map(() => true)),
-    fromEvent(document, 'touchstart').pipe(map(() => true)),
-    this.reset$.pipe(debounceTime(5000)),
-    of(true)
-  ).pipe(
-    tap(() => this.reset$.next(false)),
-    distinctUntilChanged()
-  );
-
-  gains: WritableSignal<number>[] = [];
-  micAvailable = signal(false);
-  micOn = signal(false);
-  micGain = signal(0);
-  radioGain = signal(0);
-
-  constructor() {
-    for (let i = 0; i < 29; i++) {
-      const gain = signal(0);
-      const idx = i;
-
-      this.gains.push(gain);
-
-      effect(() => {
-        const g = gain();
-        if (!this.sound) {
-          return;
-        }
-
-        this.sound.mixer.setGain(idx, g / 100);
-      });
-    }
-
-    effect(() => {
-      const g = this.micGain();
-      const multiplier = this.micGainMultiplier();
-      if (!this.sound || !this.sound.mic) {
-        return;
-      }
-
-      this.sound.mixer.setGain('mic', (g / 100) * multiplier);
-    });
-
-    effect(() => {
-      const micOn = this.micOn();
-      const micAvailable = this.micAvailable();
-      const multiplier = this.micGainMultiplier();
-
-      if (!micAvailable) {
-        return;
-      }
-
-      if (micOn) {
-        this.sound.mixer.setGain('mic', multiplier);
-      } else {
-        this.sound.mixer.setGain('mic', 0);
-      }
-    });
-
-    effect(() => {
-      const g = this.radioGain();
-      if (!this.sound) {
-        return;
-      }
-
-      this.sound.mixer.setGain('radio', g / 100);
-    });
-  }
+  constructor() {}
 
   async ngOnInit() {
     this.pillar = new Pillar(this.canvas().nativeElement);
@@ -153,40 +68,8 @@ export class Thepillar3d {
 
     this.sound = this.pillar.sound;
 
-    this.roll();
-
     this.prerunning.set(false);
     this.running.set(true);
-
-    if (this.sound.mic) {
-      this.micAvailable.set(true);
-      this.micOn.set(true);
-    }
-  }
-
-  async roll() {
-    let rolls = 0;
-    // if (Math.random() < 0.7) {
-    //   this.radioGain.set(Math.random() * 100);
-    //   rolls++;
-    // }
-
-    this.gains.forEach((gain) => {
-      gain.set(0);
-    });
-
-    const ids = [...Array(19).keys()];
-    shuffle(ids);
-    ids.slice(0, 3).forEach((i) => {
-      this.gains[i].set(Math.random() * 100);
-    });
-  }
-
-  async mute() {
-    this.radioGain.set(0);
-    this.gains.forEach((gain) => {
-      gain.set(0);
-    });
   }
 
   micGainMultiplier = signal(0.5);

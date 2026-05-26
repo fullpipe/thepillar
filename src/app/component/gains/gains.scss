@@ -1,0 +1,130 @@
+.switch {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 1;
+  gap: 0.67em;
+  height: 100vh;
+
+  position: absolute;
+  bottom: 0.67em;
+  right: 0.67em;
+
+  @media screen and (max-width: 767px) {
+    opacity: 0.2;
+  }
+
+  transition: opacity 0.2s ease-out;
+
+  .actions {
+    display: flex;
+  }
+
+  .gains {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    overflow: auto;
+    padding: 0.62em 0 0.62em 0;
+
+    @media screen and (max-width: 767px) {
+      opacity: 0.2;
+    }
+    transition: opacity 0.2s ease-out;
+
+    .gain {
+      position: relative;
+
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.67em;
+
+      span {
+        color: #fff;
+        font-size: 10px;
+        display: block;
+      }
+
+      ngx-slider {
+        width: 150px;
+      }
+    }
+
+    // --color-track: #ffffff;
+    // --color-progress: #000000;
+    --color-track: #000000;
+    --color-progress: #ffffff;
+    --color-thumb: #ff0000;
+
+    ::ng-deep {
+      ngx-slider {
+        margin: 15px 0 15px;
+        .ngx-slider-bar {
+          background: var(--color-track);
+        }
+
+        .ngx-slider-selection-bar {
+          visibility: visible !important;
+        }
+
+        .ngx-slider-selection {
+          background: var(--color-progress);
+        }
+
+        .ngx-slider-pointer {
+          width: 24px;
+          height: 24px;
+          top: -10px;
+
+          background: var(--color-thumb);
+          &::after {
+            top: 8px;
+            left: 8px;
+            background: var(--color-progress);
+          }
+
+          &:hover {
+            &::after {
+              background: var(--color-track);
+            }
+          }
+        }
+
+        .ngx-slider-bubble {
+          display: none;
+          font-size: small;
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  .mic_and_mute {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+
+    .inactive {
+      opacity: 0.62;
+    }
+    ng-icon {
+      &.is_active {
+      }
+    }
+  }
+  &.is_active {
+    opacity: 1;
+
+    .gains {
+      opacity: 1;
+    }
+  }
+
+  &.left {
+    left: 0.67em;
+    right: auto;
+  }
+}

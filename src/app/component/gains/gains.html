@@ -1,0 +1,36 @@
+<div class="switch">
+  <div class="gains">
+    @for (gain of gains; track $index; let idx = $index) {
+      <div class="gain">
+        <span>{{ sound().tracks[idx].name }}</span>
+        <ngx-slider
+          [(value)]="gain"
+          [options]="{ floor: 0, ceil: 100, step: 1 }"
+        ></ngx-slider>
+      </div>
+    }
+    <div class="gain">
+      <ng-icon name="heroRadio" />
+      <ngx-slider
+        [(value)]="radioGain"
+        [options]="{ floor: 0, ceil: 100, step: 1 }"
+      ></ngx-slider>
+    </div>
+  </div>
+  <div class="mic_and_mute">
+    @if (micAvailable()) {
+      <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
+        <ng-icon name="heroMicrophone" />
+      </button>
+    }
+
+    <button (click)="mute()">
+      <ng-icon name="heroSpeakerXMark" />
+    </button>
+
+    <button (click)="roll()">
+      <ng-icon name="heroArrowPathRoundedSquare" />
+    </button>
+    <app-fullscreen-button [pillar]="pillar()"></app-fullscreen-button>
+  </div>
+</div>

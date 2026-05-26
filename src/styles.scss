@@ -20,3 +20,24 @@ a {
   // --color1: #809da2;
   // --color2: #a1b5b9;
 }
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  ng-icon {
+    color: white;
+    font-size: 1.62em;
+
+    &.active {
+      cursor: default;
+      color: #898989;
+    }
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.62;
+  }
+}

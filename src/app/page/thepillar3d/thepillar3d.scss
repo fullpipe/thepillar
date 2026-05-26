@@ -13,12 +13,6 @@ canvas {
   background: linear-gradient(var(--color1), var(--color2));
 }
 
-button {
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
 .switch {
   display: flex;
   flex-direction: column;
@@ -38,16 +32,6 @@ button {
 
   transition: opacity 0.2s ease-out;
 
-  ng-icon {
-    color: white;
-    font-size: large;
-
-    &.active {
-      cursor: default;
-      color: #898989;
-    }
-  }
-
   .actions {
     display: flex;
   }
@@ -65,7 +49,6 @@ button {
     transition: opacity 0.2s ease-out;
 
     .gain {
-      // width: 250px;
       position: relative;
 
       display: flex;
@@ -76,18 +59,11 @@ button {
       span {
         color: #fff;
         font-size: 10px;
-        // margin-bottom: -5px;
         display: block;
       }
 
       ngx-slider {
         width: 150px;
-      }
-
-      ng-icon {
-        // position: absolute;
-        // left: -1.2em;
-        // top: 25%;
       }
     }
 
@@ -207,7 +183,7 @@ button {
     border: none;
     color: #fff;
     scale: 1;
-    font-size: 2.62em;
+    font-size: 3.62em;
     padding: 0.62em;
     ng-icon {
       color: #fff;
@@ -228,7 +204,11 @@ button {
   letter-spacing: 0;
   max-height: 100%;
   margin-bottom: 0;
-  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-family:
+    Arial,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
   font-size: 4vw;
   line-height: 1;
 

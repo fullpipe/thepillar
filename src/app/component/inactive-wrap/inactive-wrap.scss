@@ -1,0 +1,8 @@
+.wrap {
+  opacity: 1;
+  transition: opacity 0.2s ease-out;
+
+  &.inactive {
+    opacity: 0.62;
+  }
+}

@@ -1,94 +1,71 @@
 <canvas #pillarCanvas></canvas>
 
 @if (!running()) {
-<div class="control">
-  @if(loading()) {
-  <div class="loading">
-    <div class="progress">{{ loadProgress() }}%</div>
-    <div class="bar" [style.width.%]="loadProgress()"></div>
-  </div>
-  } @else { @if(prerunning()) {
-  <div class="play">
-    <ng-icon name="heroEllipsisHorizontal" />
-  </div>
-  } @else {
-  <button class="play shake-horizontal" (click)="run()">
-    <ng-icon name="heroPlay" />
-  </button>
-  } }
-</div>
-} @if (running()) {
-<div class="switch" [class.is_active]="isActive$ | async">
-  <div class="gains">
-    @for (gain of gains; track $index; let idx = $index) {
-    <div class="gain">
-      <span>{{ sound.tracks[idx].name }}</span>
-      <ngx-slider
-        [(value)]="gain"
-        [options]="{ floor: 0, ceil: 100, step: 1 }"
-      ></ngx-slider>
-    </div>
+  <div class="control">
+    @if (loading()) {
+      <div class="loading">
+        <div class="progress">{{ loadProgress() }}%</div>
+        <div class="bar" [style.width.%]="loadProgress()"></div>
+      </div>
+    } @else {
+      @if (prerunning()) {
+        <div class="play">
+          <ng-icon name="heroEllipsisHorizontal" />
+        </div>
+      } @else {
+        <button class="play shake-horizontal" (click)="run()">
+          <ng-icon name="heroPlay" />
+        </button>
+      }
     }
-    <div class="gain">
-      <ng-icon name="heroRadio" />
-      <ngx-slider
-        [(value)]="radioGain"
-        [options]="{ floor: 0, ceil: 100, step: 1 }"
-      ></ngx-slider>
-    </div>
   </div>
-  <div class="mic_and_mute">
-    @if (micAvailable()) {
-    <button [class.inactive]="!micOn()" (click)="micOn.set(!micOn())">
-      <ng-icon name="heroMicrophone" />
-    </button>
-    }
-
-    <button (click)="mute()">
-      <ng-icon name="heroSpeakerXMark" />
-    </button>
-
-    <button (click)="roll()">
-      <ng-icon name="heroArrowPathRoundedSquare" />
-    </button>
-  </div>
-</div>
-<div class="switch left">
-  <div class="gains">
-    <div class="gain">
-      <span>smoothingTimeConstant</span>
-      <ngx-slider
-        [(value)]="sound.analyser.smoothingTimeConstant"
-        [options]="{ floor: 0, ceil: 0.99, step: 0.01 }"
-      ></ngx-slider>
+}
+@if (running()) {
+  <app-inactive-wrap>
+    <app-gains
+      [pillar]="pillar"
+      [sound]="sound"
+      [micGainMultiplier]="micGainMultiplier()"
+    ></app-gains>
+  </app-inactive-wrap>
+  <app-inactive-wrap>
+    <div class="switch left">
+      <div class="gains">
+        <div class="gain">
+          <span>smoothingTimeConstant</span>
+          <ngx-slider
+            [(value)]="sound.analyser.smoothingTimeConstant"
+            [options]="{ floor: 0, ceil: 0.99, step: 0.01 }"
+          ></ngx-slider>
+        </div>
+        <div class="gain">
+          <span>minDecibels/maxDecibels</span>
+          <ngx-slider
+            [(value)]="sound.analyser.minDecibels"
+            [(highValue)]="sound.analyser.maxDecibels"
+            [options]="{ floor: -128, ceil: 0, step: 1 }"
+          ></ngx-slider>
+        </div>
+        <div class="gain">
+          <span>minDBCut</span>
+          <ngx-slider
+            [(value)]="sound.minDBCut"
+            [options]="{ floor: 0, ceil: 128, step: 1 }"
+          ></ngx-slider>
+        </div>
+        <div class="gain">
+          <span>micGainMultiplier</span>
+          <ngx-slider
+            [(value)]="micGainMultiplier"
+            [options]="{ floor: 0, ceil: 5, step: 0.1 }"
+          ></ngx-slider>
+        </div>
+      </div>
+      <div class="mic_and_mute">
+        <button (click)="resetTech()">
+          <ng-icon name="heroArrowPathRoundedSquare" />
+        </button>
+      </div>
     </div>
-    <div class="gain">
-      <span>minDecibels/maxDecibels</span>
-      <ngx-slider
-        [(value)]="sound.analyser.minDecibels"
-        [(highValue)]="sound.analyser.maxDecibels"
-        [options]="{ floor: -128, ceil: 0, step: 1 }"
-      ></ngx-slider>
-    </div>
-    <div class="gain">
-      <span>minDBCut</span>
-      <ngx-slider
-        [(value)]="sound.minDBCut"
-        [options]="{ floor: 0, ceil: 128, step: 1 }"
-      ></ngx-slider>
-    </div>
-    <div class="gain">
-      <span>micGainMultiplier</span>
-      <ngx-slider
-        [(value)]="micGainMultiplier"
-        [options]="{ floor: 0, ceil: 5, step: 0.1 }"
-      ></ngx-slider>
-    </div>
-  </div>
-  <div class="mic_and_mute">
-    <button (click)="resetTech()">
-      <ng-icon name="heroArrowPathRoundedSquare" />
-    </button>
-  </div>
-</div>
+  </app-inactive-wrap>
 }

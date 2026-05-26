@@ -39,8 +39,7 @@ import { LUTCubeLoader } from 'three/addons/loaders/LUTCubeLoader.js';
 import { toggleFullScreen } from './helpers/fullscreen';
 import Stats from 'stats.js';
 import { resizeRendererToDisplaySize } from './helpers/responsiveness';
-import { Sound, SoundSource } from './sound';
-import { signal } from '@angular/core';
+import { Sound } from './sound';
 
 export class Pillar {
   canvas: HTMLElement;
@@ -356,7 +355,7 @@ export class Pillar {
     {
       const filmPass = new FilmPass(
         1, // intensity
-        false // grayscale
+        false, // grayscale
       );
       filmPass.enabled = false;
 
@@ -366,7 +365,7 @@ export class Pillar {
       f.add(filmPass, 'enabled');
 
       f.add((filmPass.uniforms as any)['intensity'], 'value', 0, 3, 0.1).name(
-        'intensity'
+        'intensity',
       );
       f.add((filmPass.uniforms as any)['grayscale'], 'value').name('grayscale');
     }
@@ -416,7 +415,7 @@ export class Pillar {
   async buildLight() {
     this.directLight = new DirectionalLight(
       this.config.light.direct.color,
-      this.config.light.direct.intensity
+      this.config.light.direct.intensity,
     );
     this.directLight.position.set(10, 10, 20);
     this.scene.add(this.directLight);
@@ -424,7 +423,7 @@ export class Pillar {
 
     this.ambientLight = new AmbientLight(
       this.config.light.ambient.color,
-      this.config.light.ambient.intensity
+      this.config.light.ambient.intensity,
     );
     this.scene.add(this.ambientLight);
 
@@ -445,8 +444,8 @@ export class Pillar {
         const wire = await this.loadGtlfMesh(
           `models/mass-separate-001/mass-001-sm-${String(idx + 1).padStart(
             3,
-            '0'
-          )}.glb`
+            '0',
+          )}.glb`,
         );
 
         const material = new MeshStandardMaterial({
@@ -480,10 +479,10 @@ export class Pillar {
 
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * progress)
+            Math.floor(wire.geometry.index?.count! * progress),
           );
         });
-      })
+      }),
     );
   }
 
@@ -503,8 +502,8 @@ export class Pillar {
         const wire = await this.loadGtlfMesh(
           `models/core-separate-002/core-009-sm-${String(idx + 1).padStart(
             3,
-            '0'
-          )}.glb`
+            '0',
+          )}.glb`,
         );
 
         const material = new MeshStandardMaterial({
@@ -532,10 +531,10 @@ export class Pillar {
 
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * progress)
+            Math.floor(wire.geometry.index?.count! * progress),
           );
         });
-      })
+      }),
     );
   }
 
@@ -543,7 +542,7 @@ export class Pillar {
     return Promise.all(
       [...Array(13).keys()].map(async (idx) => {
         const wire = await this.loadGtlfMesh(
-          `models/core-long-separate-003/core-long_${idx}.glb`
+          `models/core-long-separate-003/core-long_${idx}.glb`,
         );
 
         const material = new MeshStandardMaterial({
@@ -571,10 +570,10 @@ export class Pillar {
 
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * progress)
+            Math.floor(wire.geometry.index?.count! * progress),
           );
         });
-      })
+      }),
     );
   }
 
@@ -582,7 +581,7 @@ export class Pillar {
     return Promise.all(
       [...Array(39).keys()].map(async (idx) => {
         const wire = await this.loadGtlfMesh(
-          `models/mass-long-separate-003/mass-long_${idx}.glb`
+          `models/mass-long-separate-003/mass-long_${idx}.glb`,
         );
 
         const material = new MeshStandardMaterial({
@@ -616,10 +615,10 @@ export class Pillar {
 
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * progress)
+            Math.floor(wire.geometry.index?.count! * progress),
           );
         });
-      })
+      }),
     );
   }
 
@@ -627,7 +626,7 @@ export class Pillar {
     return Promise.all(
       [...Array(104).keys()].map(async (idx) => {
         const wire = await this.loadGtlfMesh(
-          `models/wrap-separate-003/wrap_${idx}.glb`
+          `models/wrap-separate-003/wrap_${idx}.glb`,
         );
 
         const material = new MeshStandardMaterial({
@@ -661,10 +660,10 @@ export class Pillar {
 
           wire.geometry.setDrawRange(
             0,
-            Math.floor(wire.geometry.index?.count! * progress)
+            Math.floor(wire.geometry.index?.count! * progress),
           );
         });
-      })
+      }),
     );
   }
 
@@ -718,7 +717,7 @@ export class Pillar {
       top,
       bottom,
       near,
-      far
+      far,
     );
     ortocamera.zoom = 1.2;
     this.camera = ortocamera;
@@ -790,13 +789,10 @@ export class Pillar {
     //   material.needsUpdate = true;
     // });
     // dragControls.enabled = false;
+  }
 
-    // Full screen
-    window.addEventListener('dblclick', (event) => {
-      if (event.target === this.canvas) {
-        toggleFullScreen(this.canvas);
-      }
-    });
+  toggleFullScreen() {
+    toggleFullScreen(this.canvas);
   }
 
   loadLUT(path: string) {
@@ -831,7 +827,7 @@ export class Pillar {
         () => {},
         (error) => {
           reject(error);
-        }
+        },
       );
     });
   }
@@ -848,7 +844,7 @@ export class Pillar {
         () => {},
         (error) => {
           reject(error);
-        }
+        },
       );
     });
   }
