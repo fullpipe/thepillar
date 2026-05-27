@@ -8,7 +8,6 @@ import { Test } from './page/test/test';
 export const routes: Routes = [
   {
     path: '',
-    // component: Thepillar3d,
     loadComponent: () =>
       import('./page/thepillar3d/thepillar3d').then((m) => m.Thepillar3d),
 

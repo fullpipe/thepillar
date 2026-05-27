@@ -15,15 +15,12 @@ import { provideIcons, NgIcon } from '@ng-icons/core';
   ],
 })
 export class FullscreenButton {
-  @HostListener('dblclick')
-  handleDoubleClick() {
-    this.pillar().toggleFullScreen();
-  }
-
-  @HostListener('window:keydown.f')
-  handleKeydownF() {
-    this.pillar().toggleFullScreen();
-  }
-
   pillar = input.required<Pillar>();
+
+  @HostListener('window:dblclick')
+  @HostListener('window:keydown.f')
+  @HostListener('window:keydown.а')
+  toggleFullscreen() {
+    this.pillar().toggleFullScreen();
+  }
 }
