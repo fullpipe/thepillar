@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { InactiveWrap } from '../../component/inactive-wrap/inactive-wrap';
 import { Gains } from '../../component/gains/gains';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-thepillar3d',
@@ -46,6 +47,8 @@ export class Thepillar3d {
   loadProgress = signal(0);
   prerunning = signal(false);
   running = signal(false);
+
+  debug = environment.debug;
 
   constructor() {}
 

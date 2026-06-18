@@ -11,6 +11,7 @@ import { NgIcon } from '@ng-icons/core';
 import { FullscreenButton } from '../fullscreen-button/fullscreen-button';
 import { Pillar } from '../../page/thepillar3d/pillar/pillar';
 import { shuffle } from '../../page/thepillar3d/pillar/helpers/shuffle';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-gains',
@@ -93,10 +94,11 @@ export class Gains {
 
   async roll() {
     let rolls = 0;
-    // if (Math.random() < 0.7) {
-    //   this.radioGain.set(Math.random() * 100);
-    //   rolls++;
-    // }
+
+    if (!environment.debug && Math.random() < 0.7) {
+      this.radioGain.set(Math.random() * 100);
+      rolls++;
+    }
 
     this.gains.forEach((gain) => {
       gain.set(0);

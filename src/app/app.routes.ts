@@ -1,9 +1,4 @@
 import { Routes } from '@angular/router';
-import { Index } from './page/index';
-import { Color } from './page/color/color';
-import { Thepillar } from './page/thepillar/thepillar';
-import { Thepillar3d } from './page/thepillar3d/thepillar3d';
-import { Test } from './page/test/test';
 
 export const routes: Routes = [
   {
@@ -13,11 +8,11 @@ export const routes: Routes = [
 
     title: 'The Pillar Radio by Pterodactyl Supplies',
   },
-  {
-    path: 'test',
-    component: Test,
-    title: 'Alexandra Fiodorova likes blue',
-  },
+  // {
+  //   path: 'test',
+  //   component: Test,
+  //   title: 'Alexandra Fiodorova likes blue',
+  // },
   // {
   //   path: 'color',
   //   component: Color,

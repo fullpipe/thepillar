@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { shuffle } from './helpers/shuffle';
 
 export enum SoundSource {
@@ -87,15 +88,20 @@ export class Sound {
     track.preload = 'auto';
     track.loop = true;
 
+    let name = '';
+    if (environment.debug) {
+      name = path;
+    }
+
     const canplaythrough = new Promise<Track>((resolve, reject) => {
       track.addEventListener(
         'canplaythrough',
         () =>
           resolve({
-            name: path,
+            name: name,
             audio: track,
           }),
-        false
+        false,
       );
     });
 
@@ -128,19 +134,25 @@ export class Sound {
     this.tracks = await Promise.all(
       ids.map((idx) => {
         return this.loadTrack(`/ogg-lofi/${idx}-lo.ogg`);
-      })
+      }),
     );
 
-    this.tracks.push(await this.loadTrack('/test-mp3/10hz.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/50hz.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/50to5000hz-linScale.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/50to5000hz-logScale.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/100hz.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/500hz.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/1000hz.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/brown-10dB.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/pink-10dB.mp3'));
-    this.tracks.push(await this.loadTrack('/test-mp3/whiteGauss-10dB.mp3'));
+    if (environment.debug) {
+      this.tracks.push(await this.loadTrack('/test-mp3/10hz.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/50hz.mp3'));
+      this.tracks.push(
+        await this.loadTrack('/test-mp3/50to5000hz-linScale.mp3'),
+      );
+      this.tracks.push(
+        await this.loadTrack('/test-mp3/50to5000hz-logScale.mp3'),
+      );
+      this.tracks.push(await this.loadTrack('/test-mp3/100hz.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/500hz.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/1000hz.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/brown-10dB.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/pink-10dB.mp3'));
+      this.tracks.push(await this.loadTrack('/test-mp3/whiteGauss-10dB.mp3'));
+    }
 
     this.tracks.forEach((track, i) => {
       const source = this.audioCtx.createMediaElementSource(track.audio);

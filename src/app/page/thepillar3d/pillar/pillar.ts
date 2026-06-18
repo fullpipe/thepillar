@@ -40,6 +40,7 @@ import { toggleFullScreen } from './helpers/fullscreen';
 import Stats from 'stats.js';
 import { resizeRendererToDisplaySize } from './helpers/responsiveness';
 import { Sound } from './sound';
+import { environment } from '../../../../environments/environment';
 
 export class Pillar {
   canvas: HTMLElement;
@@ -400,8 +401,10 @@ export class Pillar {
     const f = this.gui.addFolder('controls');
     f.add(this.config.animation, 'play');
 
-    this.gui.hide();
-    this.gui.close();
+    if (!environment.debug) {
+      this.gui.hide();
+      this.gui.close();
+    }
   }
 
   async restoreGUI() {
@@ -695,7 +698,10 @@ export class Pillar {
   async buildStatsAndClock() {
     this.clock = new Clock();
     this.stats = new Stats();
-    document.body.appendChild(this.stats.dom);
+
+    if (environment.debug) {
+      document.body.appendChild(this.stats.dom);
+    }
   }
 
   async buildCamera() {
